@@ -1,10 +1,29 @@
-export function boundsEqual(bounds1, bounds2) {
-  return bounds1.x === bounds2.x &&
-    bounds1.y === bounds2.y &&
-    bounds1.width === bounds2.width &&
-    bounds1.height === bounds2.height;
+/**
+ * @typedef {{
+ *   x: number,
+ *   y: number,
+ *   width: number,
+ *   height: number
+ * }} Rectangle
+ */
+
+/**
+ * 
+ * @param {Rectangle} rectangle1 
+ * @param {Rectangle} rectangle2 
+ */
+export function rectangleEqual(rectangle1, rectangle2) {
+  return rectangle1.x === rectangle2.x &&
+    rectangle1.y === rectangle2.y &&
+    rectangle1.width === rectangle2.width &&
+    rectangle1.height === rectangle2.height;
 }
 
+/**
+ * 
+ * @param {PIXI.Loader} loader 
+ * @param {{[key: string]: string}} assets 
+ */
 export function load(loader, assets) {
   return () => new Promise((resolve, reject) => {
     Object.entries(assets).forEach(([id, asset]) => loader.add(id, asset));
@@ -13,6 +32,13 @@ export function load(loader, assets) {
   });
 }
 
+/**
+ * 
+ * @param {PIXI.Ticker} ticker 
+ * @param {number} ms 
+ * @param {() => void} callback 
+ * @returns {() => void} clearTimeout
+ */
 export function timeout(ticker, ms, callback) {
   const onUpdate = () => {
     if (ms > 0) {

@@ -1,5 +1,5 @@
+import {Application as PIXI_Application} from "pixi.js";  
 import { 
-  boundsEqual, 
   hasErrorCallback, 
   hasLoadCallback, 
   hasPostLoadCallback, 
@@ -7,20 +7,33 @@ import {
   hasResizeCallback,
   hasUpdateCallback, 
   load, 
+  rectangleEqual, 
   timeout
 } from "./utils";
 
-export class Application extends PIXI.Application {
+/**
+ * @typedef {{
+  *   exit?(oldScene: string, params: {[key: string]: any}): void,
+  *   enter?(newScene: string, params: {[key: string]: any}, oldScene: string): void
+  * }} Scene
+  */
+
+/**
+ * @typedef {{
+ *   assets: {
+ *     preload: {[key: string]: string}, 
+ *     load: {[key: string]: string}, 
+ *     postLoad: {[key: string]: string}, 
+ *   },
+ *   scenes: {[key: string]: Scene}
+ * }} ApplicationOptions
+ */
+
+ 
+export class Application extends PIXI_Application {
   /**
    * 
-   * @param {{
-   *   assets: {
-   *     preload: {[key: string]: string}, 
-   *     load: {[key: string]: string}, 
-   *     postLoad: {[key: string]: string}, 
-   *   },
-   *   scenes: {[key: string]: Scene}
-   * }} options 
+   * @param {ApplicationOptions} options 
    */
   constructor(options) {
     super(options);
@@ -107,15 +120,10 @@ export class Application extends PIXI.Application {
 
   /**
    * @private
-   * @param {{
-   *   x: number, 
-   *   y: number, 
-   *   width: number, 
-   *   height: number
-   * }} viewport
+   * @param {Rectangle} viewport
    */
   onResize(viewport) {
-    if (!boundsEqual(this.currentViewport, viewport)) {
+    if (!rectangleEqual(this.currentViewport, viewport)) {
       this.currentViewport = viewport;
       if (!this.scheduledResize) {
         this.scheduledResize = timeout(this.ticker, 200, () => {
