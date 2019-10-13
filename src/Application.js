@@ -1,15 +1,25 @@
-import { timeout, boundsEqual, load, hasErrorCallback, hasUpdateCallback, hasPostLoadCallback, hasLoadCallback, hasPreloadCallback, hasResizeCallback } from "./utils";
+import { 
+  boundsEqual, 
+  hasErrorCallback, 
+  hasLoadCallback, 
+  hasPostLoadCallback, 
+  hasPreloadCallback, 
+  hasResizeCallback,
+  hasUpdateCallback, 
+  load, 
+  timeout
+} from "./utils";
 
 export class Application extends PIXI.Application {
   /**
    * 
    * @param {{
    *   assets: {
-   *     preload: Object.<string, string>, 
-   *     load: Object.<string, string>, 
-   *     postLoad: Object.<string, string>, 
+   *     preload: {[key: string]: string}, 
+   *     load: {[key: string]: string}, 
+   *     postLoad: {[key: string]: string}, 
    *   },
-   *   scenes: Object.<string, Scene>
+   *   scenes: {[key: string]: Scene}
    * }} options 
    */
   constructor(options) {
@@ -62,7 +72,7 @@ export class Application extends PIXI.Application {
    * 
    * @public
    * @param {string} newScene 
-   * @param {Object.<string, any>} params 
+   * @param {[key: string]: any} params 
    */
   playScene(newScene, params) {
     const previousScene = this.currentSceneName;
@@ -97,7 +107,12 @@ export class Application extends PIXI.Application {
 
   /**
    * @private
-   * @param {{x: number, y: number, width: number, height: number}} viewport
+   * @param {{
+   *   x: number, 
+   *   y: number, 
+   *   width: number, 
+   *   height: number
+   * }} viewport
    */
   onResize(viewport) {
     if (!boundsEqual(this.currentViewport, viewport)) {
