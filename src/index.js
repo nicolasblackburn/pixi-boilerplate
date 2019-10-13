@@ -1,26 +1,14 @@
 import * as PIXI from "pixi.js";  
+import { Application } from "./Application";
 
-const assets = [
-  "max_brazilian_8x8.png",  
-  "polyducks_12x12.png",
-  "petscii_16x16.png",
-  "polyducks_gloop_8x8.png"
-];
-
-const app = new PIXI.Application({
-  width: window.innerWidth,
-  height: window.innerHeight,
-  resolution: window.pixelDeviceResolution
+new Application({
+  width: 900,
+  height: 600,
+  resolution: window.pixelDeviceResolution,
+  assets: {
+    preload: {},
+    load: {},
+    postLoad: {}
+  },
+  scenes: {}
 });
-
-const stage = app;
-
-document.body.appendChild(app.view);
-
-function onLoad() {
-  
-}
-
-const loader = PIXI.Loader.shared;
-assets.forEach(asset => loader.add(asset));
-loader.load(onLoad);
