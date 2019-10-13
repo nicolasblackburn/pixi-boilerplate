@@ -1,6 +1,17 @@
 import { timeout, boundsEqual, load, hasErrorCallback, hasUpdateCallback, hasPostLoadCallback, hasLoadCallback, hasPreloadCallback, hasResizeCallback } from "./utils";
 
 export class Application extends PIXI.Application {
+  /**
+   * 
+   * @param {{
+   *   assets: {
+   *     preload: Object.<string, string>, 
+   *     load: Object.<string, string>, 
+   *     postLoad: Object.<string, string>, 
+   *   },
+   *   scenes: Object.<string, Scene>
+   * }} options 
+   */
   constructor(options) {
     super(options);
 
@@ -8,6 +19,13 @@ export class Application extends PIXI.Application {
     this.scenes = options.scenes;
     this.currentSceneName = null;
     this.listeners = [];
+    this.currentViewport = {
+      x: 0, 
+      y: 0, 
+      width: window.innerWidth, 
+      height: window.innerHeight
+    };
+    this.scheduledResize = null;
 
     document.body.appendChild(this.view);
 
@@ -19,14 +37,6 @@ export class Application extends PIXI.Application {
       height: window.innerHeight
     }));
     
-    this.currentViewport = {
-      x: 0, 
-      y: 0, 
-      width: window.innerWidth, 
-      height: window.innerHeight
-    };
-    this.scheduledResize = null;
-    
     Promise.resolve()
     .then(() => load(this.loader, this.assets.preload))
     .then(() => this.onPreload())
@@ -37,6 +47,9 @@ export class Application extends PIXI.Application {
     .catch(error => this.onError(error));
   }
 
+  /**
+   * @public
+   */
   getCurrentScene() {
     if (this.scenes[this.currentSceneName]) {
       return this.scenes[this.currentSceneName];
@@ -45,6 +58,12 @@ export class Application extends PIXI.Application {
     }
   }
 
+  /**
+   * 
+   * @public
+   * @param {string} newScene 
+   * @param {Object.<string, any>} params 
+   */
   playScene(newScene, params) {
     const previousScene = this.currentSceneName;
     Promise.resolve()
@@ -78,6 +97,7 @@ export class Application extends PIXI.Application {
 
   /**
    * @private
+   * @param {{x: number, y: number, width: number, height: number}} viewport
    */
   onResize(viewport) {
     if (!boundsEqual(this.currentViewport, viewport)) {
