@@ -26,3 +26,35 @@ export function timeout(ticker, ms, callback) {
   ticker.add(onUpdate);
   return () => ticker.remove(onUpdate);
 }
+
+export function hasEnterCallback(obj) {
+  return typeof obj.enter === "function";
+}
+
+export function hasExitCallback(obj) {
+  return typeof obj.exit === "function";
+}
+
+export function hasResizeCallback(obj) {
+  return typeof obj.resize === "function";
+}
+
+export function hasPreloadCallback(obj) {
+  return typeof obj.preload === "function";
+}
+
+export function hasLoadCallback(obj) {
+  return typeof obj.load === "function";
+}
+
+export function hasPostLoadCallback(obj) {
+  return typeof obj.postLoad === "function";
+}
+
+export function hasUpdateCallback(obj) {
+  return typeof obj.update === "function";
+}
+
+export function hasErrorCallback(obj) {
+  return typeof obj.error === "function";
+}

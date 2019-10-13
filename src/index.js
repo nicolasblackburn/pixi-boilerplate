@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";  
 import { Application } from "./Application";
 
-new Application({
+const app = new Application({
   width: 900,
   height: 600,
   resolution: window.pixelDeviceResolution,
@@ -12,3 +12,5 @@ new Application({
   },
   scenes: {}
 });
+
+window.app = app;
