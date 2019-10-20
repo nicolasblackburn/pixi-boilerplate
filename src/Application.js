@@ -10,6 +10,7 @@ import {
   rectangleEqual, 
   timeout
 } from "./utils";
+import { Inputs } from "./Inputs";
 
 /**
  * @typedef {{
@@ -38,8 +39,23 @@ export class Application extends PIXI_Application {
   constructor(options) {
     super(options);
 
+    options = {
+      onStart: () => { return; },
+      onPreload: () => { return; },
+      onLoad: () => { return; },
+      onPostLoad: () => { return; },
+      ...options,
+      assets: {
+        ...options.assets
+      },
+      scenes: {
+        ...options.scenes
+      }
+    };
+
     this.assets = options.assets;
     this.scenes = options.scenes;
+    this.loadedScenes = Object.keys(options.scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
     this.currentSceneName = null;
     this.listeners = [];
     this.currentViewport = {
@@ -49,9 +65,16 @@ export class Application extends PIXI_Application {
       height: window.innerHeight
     };
     this.scheduledResize = null;
+    this.optionsOnStart = options.onStart;
+    this.optionsOnPreload = options.onPreload;
+    this.optionsOnLoad = options.onLoad;
+    this.optionsOnPostLoad = options.onPostLoad;
 
     document.body.appendChild(this.view);
 
+    document.addEventListener("keydown", e => e.key.match(/^Arrow/) && e.preventDefault());
+
+    this.inputs = new Inputs();
     this.ticker.add(this.onUpdate, this);
     window.addEventListener("resize", () => this.onResize({
       x: 0, 
@@ -59,8 +82,15 @@ export class Application extends PIXI_Application {
       width: window.innerWidth, 
       height: window.innerHeight
     }));
+
+    for (const [key, value] of Object.entries(this.scenes)) {
+      if (typeof value === "function") {
+        this.scenes[key] = value(this);
+      }
+    } 
     
     Promise.resolve()
+    .then(() => this.optionsOnStart())
     .then(() => load(this.loader, this.assets.preload))
     .then(() => this.onPreload())
     .then(() => load(this.loader, this.assets.load))
@@ -89,7 +119,25 @@ export class Application extends PIXI_Application {
    */
   playScene(newScene, params) {
     const previousScene = this.currentSceneName;
-    Promise.resolve()
+    if (this.scenes[previousScene]) {
+      this.stage.addChildAt(
+        this.scenes[newScene], 
+        this.stage.getChildIndex(previousScene)
+      );
+    } else {
+      this.stage.addChild(this.scenes[newScene]);
+    }
+
+    return Promise.resolve()
+    .then(() => {
+      if (!this.loadedScenes[newScene]) {
+        return Promise.resolve()
+          .then(() => this.scenes[newScene].load())
+          .then(() => this.loadedScenes[newScene] = true);
+      } else {
+        return Promise.resolve();
+      }
+    })
     .then(() => {
       if (typeof this.getCurrentScene().exit === "function") {
         return this.getCurrentScene().exit(newScene, params);
@@ -107,6 +155,8 @@ export class Application extends PIXI_Application {
     })
     .then(() => {
       if (this.scenes[previousScene]) {
+        this.stage.removeChild(this.scenes[previousScene]);
+        
         const index = this.listeners.indexOf(this.scenes[previousScene]);
         if (index >= 0) {
           this.listeners.splice(index, 1);
@@ -147,6 +197,7 @@ export class Application extends PIXI_Application {
         listener.preload(this.stage);
       }
     });
+    return this.optionsOnPreload();
   }
   
   /**
@@ -158,6 +209,7 @@ export class Application extends PIXI_Application {
         listener.load(this.stage);
       }
     });
+    return this.optionsOnLoad();
   }
   
   /**
@@ -169,15 +221,17 @@ export class Application extends PIXI_Application {
         listener.postLoad(this.stage);
       }
     });
+    return this.optionsOnPostLoad();
   }
   
   /**
    * @private
    */
   onUpdate() {
+    const deltaTime = this.ticker.elapsedMS;
     this.listeners.forEach(listener => {
       if (hasUpdateCallback(listener)) {
-        listener.update(this.stage);
+        listener.update(deltaTime);
       }
     });
   }
@@ -188,7 +242,7 @@ export class Application extends PIXI_Application {
   onError(error) {
     this.listeners.forEach(listener => {
       if (hasErrorCallback(listener)) {
-        listener.error(this.stage);
+        listener.error();
       }
     });
     throw error;

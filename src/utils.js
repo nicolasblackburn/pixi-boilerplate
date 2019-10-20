@@ -84,3 +84,35 @@ export function hasUpdateCallback(obj) {
 export function hasErrorCallback(obj) {
   return typeof obj.error === "function";
 }
+
+export function parseSVGPath(path) {
+  const tokens = path.split(/[\s\t\r\n]*,[\s\t\r\n]*|[\s\t\r\n]+/);
+  const helper = (last, tokens, result) => {
+    if (!tokens.length) {
+      return result;
+    } else if ("M" === tokens[0]) {
+      const [x, y] = tokens.slice(1, 3).map(x => parseFloat(x));
+      const rest = tokens.slice(3);
+      return helper({x, y}, rest, result.concat([{x, y}]));
+    } else if ("L" === tokens[0]) {
+      const [x, y] = tokens.slice(1, 3).map(x => parseFloat(x));
+      const rest = tokens.slice(3);
+      return helper({x, y}, rest, result.concat([{x, y}]));
+    } else if ("V" === tokens[0]) {
+      const [x, y] = [last.x, parseFloat(tokens[1])];
+      const rest = tokens.slice(2);
+      return helper({x, y}, rest, result.concat([{x, y}]));
+    } else if ("H" === tokens[0]) {
+      const [x, y] = [parseFloat(tokens[1]), last.y];
+      const rest = tokens.slice(2);
+      return helper({x, y}, rest, result.concat([{x, y}]));
+    } else if ("Z" === tokens[0]) {
+      return result;
+    } else {
+      const [x, y] = tokens.slice(0, 2).map(x => parseFloat(x));
+      const rest = tokens.slice(2);
+      return helper({x, y}, rest, result.concat([{x, y}]));
+    }
+  }
+  return helper({x: 0, y: 0}, tokens, []);
+}
