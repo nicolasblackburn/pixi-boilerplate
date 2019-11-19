@@ -58,9 +58,5 @@ module.exports = {
       minSize: 30000,
       name: true
     }
-  },
-
-  devServer: {
-    open: true
   }
 };

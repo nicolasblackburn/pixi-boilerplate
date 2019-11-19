@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";  
-import { Application } from "./Application";
-import { Scene } from "./Scene";
+import { Application } from "./core/Application";
+import { Scene } from "./core/Scene";
+import { MainScene } from "./scene/MainScene";
 
 window.app = new Application({
   antialias: true,
@@ -13,7 +14,7 @@ window.app = new Application({
     postLoad: {}
   },
   scenes: {
-    main: app => new Scene(app)
+    main: app => new MainScene(app)
   },
   onLoad: () => {
     return app.playScene("main");

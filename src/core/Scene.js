@@ -1,10 +1,9 @@
+import {hasLoadCallback} from "./utils";
+
 export class Scene extends PIXI.Container {
   constructor({inputs}) {
     super();
     this.inputs = inputs;
-  }
-
-  load() {
   }
 
   update(deltaTime) {
