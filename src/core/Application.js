@@ -44,6 +44,7 @@ export class Application extends PIXI_Application {
       onPreload: () => { return; },
       onLoad: () => { return; },
       onPostLoad: () => { return; },
+      onResize: () => { return; },
       ...options,
       assets: {
         ...options.assets
@@ -69,6 +70,7 @@ export class Application extends PIXI_Application {
     this.optionsOnPreload = options.onPreload;
     this.optionsOnLoad = options.onLoad;
     this.optionsOnPostLoad = options.onPostLoad;
+    this.optionsOnResize = options.onResize;
 
     document.body.appendChild(this.view);
 
@@ -178,6 +180,7 @@ export class Application extends PIXI_Application {
       if (!this.scheduledResize) {
         this.scheduledResize = timeout(this.ticker, 200, () => {
           this.scheduledResize = null;
+          this.optionsOnResize(this.currentViewport);
           this.listeners.forEach(listener => {
             if (hasResizeCallback(listener)) {
               listener.resize(this.currentViewport);

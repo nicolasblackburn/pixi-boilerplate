@@ -116,3 +116,33 @@ export function parseSVGPath(path) {
   }
   return helper({x: 0, y: 0}, tokens, []);
 }
+
+export function papply(f, ...args) {
+  return f.bind(null, ...args);
+}
+
+export function compose(g, f, ...rest) {
+  if (rest.length === 0) {
+    return function(...xs) {
+      return g(f(...xs));
+    };
+  } else {
+    return compose(g, compose(f, ...rest));
+  }
+}
+
+export function add(...args) {
+  return args.reduce((a, b) => a + b, 0);
+}
+
+export function sub(a, ...args) {
+  return a - add(...args);
+}
+
+export function mult(...args) {
+  return args.reduce((a, b) => a * b, 1);
+}
+
+export function div(a, ...args) {
+  return a / mult(...args);
+}
