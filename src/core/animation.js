@@ -1,5 +1,3 @@
-import { create as create_observable } from "./observable";
-
 export function lerp(from, to) {
   return t => (1 - t) * from + t * to;
 }
@@ -33,76 +31,105 @@ export function bezier(p1, p2, p3, p4) {
   };
 }
 
-export function timer(props) {
-  props = {
-    duration: Number.POSITIVE_INFINITY,
-    ticker: new PIXI.Ticker(),
+export function fromTicker(ticker, options) {
+  options = {
     autoplay: true,
-    ...props
+    ...options
   };
+  let observers = [];
+  const forceUpdate = deltaMS => {
+    state.currentTime += deltaMS;
+    observers.forEach(({update}) => {
+      if (update) {
+        update(state.currentTime, deltaMS);
+      }
+    });
+  };
+  const update = () => {
+    if (state.playing) {
+      forceUpdate(ticker.deltaMS);
+    }
+  };
+  let unsubscribe;
   const state = {
-    playing: props.autoplay,
+    playing: options.autoplay,
     currentTime: 0
   };
-  if (props.autoplay) {
-    props.ticker.start();
-  }
-  const subject = create_observable(observer => {
-      const update = deltaTime => {
-        if (state.playing) {
-          const lastTime = state.currentTime;
-          const elapsedTime = lastTime + (deltaTime !== 0 ? props.ticker.deltaMS : 0);
-          state.currentTime = Math.min(props.duration, elapsedTime);
-          observer.next(state.currentTime);
-          if (state.currentTime === props.duration) {
-            state.playing = false;
-            observer.complete({
-              elapsedTime,
-              deltaTime
-            });
+  return {
+    play: () => state.playing = true,
+    stop: () => state.playing = false,
+    subscribe: observer => {
+      observer = typeof observer === 'function' ? {update: observer} : observer;
+      observers.push(observer);
+      if (!unsubscribe) {
+        ticker.add(update);
+        unsubscribe = () => ticker.remove(update);
+      }
+      return {
+        unsubscribe: () => observers.remove(observer)
+      };
+    },
+    clear: () => {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = undefined;
+      }
+      observers = [];
+    },
+    get duration() {
+      return Number.POSITIVE_INFINITY;
+    },
+    get playing() {
+      return state.playing;
+    },
+    get currentTime() {
+      return state.currentTime;
+    },
+    set currentTime(currentTime) {
+      forceUpdate(currentTime - state.currentTime);
+    }
+  };
+}
+
+export function animate(duration, update, options) {
+  options = {
+    master: fromTicker(PIXI.Ticker.shared),
+    ...options
+  };
+  stop = typeof duration === 'function' ? duration : t => t >= duration;
+  duration = typeof duration === 'function' ? Number.POSITIVE_INFINITY : duration;
+  const animation = {
+    play: () => options.master.play(),
+    stop: () => options.master.stop(),
+    subscribe: observer => {
+      observer = typeof observer === 'function' ? {update: observer, complete: () => { return; }} : observer;
+      return options.master.subscribe({
+        ...observer,
+        update: (time, deltaTime) => {
+          observer.update(update(Math.min(duration, time), deltaTime));
+          if (stop(time, deltaTime)) {
+            animation.stop();
+            observer.complete(time, deltaTime);
           }
         }
-      }
-      props.ticker.add(update);
-      return () => props.ticker.remove(update);
-  });
-  const {clear, subscribe, then} = subject;
-  const subjectB = {
-    _props: props,
-    _state: state,
-    clear: () => {
-      clear();
-      state.playing = false;
-      state.currentTime = 0;
-      return subjectB;
+      });
     },
-    play: () => {
-      state.playing = true;
-      return subjectB;
+    clear: () => options.master.clear(),
+    get duration() {
+      return duration;
     },
-    stop: () => {
-      state.playing = false;
-      return subjectB;
+    get playing() {
+      return options.master.playing;
     },
-    subscribe,
-    then
-  };
-  Object.defineProperties(subjectB, {
-    duration: {
-      get: () => props.duration
+    get currentTime() {
+      return options.master.currentTime;
     },
-    playing: {
-      get: () => state.playing
-    },
-    currentTime: {
-      get: () => state.currentTime,
-      set: currentTime => {
-        state.currentTime = currentTime;
-        props.ticker.update(0);
-      }
+    set currentTime(currentTime) {
+      return options.master.currentTime = currentTime;
     }
-  });
-  return subjectB;
+  };
+  animation.subscribe(() => { return; });
+  return animation;
 }
 
 export function to(target, duration, to, options) {
@@ -116,36 +143,35 @@ export function from(target, duration, from, options) {
 export function fromTo(target, duration, from, to, options) {
   options = {
     ease: quadOut,
-    error: () => { return; },
-    complete: () => { return; },
     ...options
   }
-  const fromB = {};
-  const toB = {};
-  Object.entries(from).forEach(([k, v]) => {
+  const fns = Object.entries(from).reduce((fns, [k, v]) => {
     if (to.hasOwnProperty(k)) {
-      fromB[k] = v;
-      toB[k] = to[k];
+      fns.push([k, lerp(v, to[k])]);
     }
-  });
-  const fns = Object.keys(fromB).map(k => [k, lerp(fromB[k], toB[k])]);
+    return fns;
+  }, []);
   const f = t => fns.map(([k, f]) => [k, f(t)]);
-  const subject = timer({duration});
-  subject.subscribe({
-    next: t => 
-      f(options.ease(t / duration)).forEach(([k, v]) => target[k] = v),
-    error: options.error,
-    complete: options.complete
-  });
-  return subject;
+  return animate(duration, time => {
+    f(options.ease(time / duration)).forEach(([k, v]) => target[k] = v);
+  }, options);
 }
 
-export function group(a, b, ...rest) {
-  if (rest.length === 0) {
-    const duration = Math.max(a.duration, b.duration)
-  } else {
-
-  }
+export function group(...anims) {
+  const duration = anims.reduce(
+    (max, anim) => {
+      anim.stop();
+      return Math.max(
+        max 
+        , typeof anim.duration === 'function' ? 
+          Number.POSITIVE_INFINITY : 
+          anim.duration
+      );
+    }, 0
+  );
+  return animate(duration, (time) => {
+    anims.forEach(anim => anim.currentTime = time);
+  });
 }
 
 export function concat() {

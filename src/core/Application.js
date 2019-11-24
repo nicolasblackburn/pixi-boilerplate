@@ -90,8 +90,10 @@ export class Application extends PIXI_Application {
         this.scenes[key] = value(this);
       }
     } 
-    
-    Promise.resolve()
+  }
+
+  startGame() {
+    return Promise.resolve()
     .then(() => this.optionsOnStart())
     .then(() => load(this.loader, this.assets.preload))
     .then(() => this.onPreload())
