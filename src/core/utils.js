@@ -117,6 +117,14 @@ export function parseSVGPath(path) {
   return helper({x: 0, y: 0}, tokens, []);
 }
 
+export function objectMap(f, obj) {
+  let result = {};
+  Object.entries(obj).forEach(([k, v], i) => {
+    result[k] = f(v, k, i);
+  });
+  return result;
+}
+
 export function papply(f, ...args) {
   return f.bind(null, ...args);
 }
