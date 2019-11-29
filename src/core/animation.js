@@ -41,7 +41,7 @@ export function fromTicker(ticker, options) {
     state.currentTime += deltaMS;
     observers.forEach(({update}) => {
       if (update) {
-        update(state.currentTime, deltaMS);
+        update(state.currentTime, deltaMS, state.currentTime);
       }
     });
   };
@@ -55,7 +55,7 @@ export function fromTicker(ticker, options) {
     playing: options.autoplay,
     currentTime: 0
   };
-  return {
+  const animation = {
     play: () => state.playing = true,
     stop: () => state.playing = false,
     subscribe: observer => {
@@ -89,6 +89,7 @@ export function fromTicker(ticker, options) {
       forceUpdate(currentTime - state.currentTime);
     }
   };
+  return animation;
 }
 
 export function animate(duration, update, options) {
@@ -106,7 +107,8 @@ export function animate(duration, update, options) {
       return options.master.subscribe({
         ...observer,
         update: (time, deltaTime) => {
-          observer.update(update(Math.min(duration, time), deltaTime));
+          time = Math.min(duration, time);
+          observer.update(time, deltaTime);
           if (stop(time, deltaTime)) {
             animation.stop();
             observer.complete(time, deltaTime);
@@ -128,7 +130,7 @@ export function animate(duration, update, options) {
       return options.master.currentTime = currentTime;
     }
   };
-  animation.subscribe(() => { return; });
+  animation.subscribe(update);
   return animation;
 }
 
