@@ -1,14 +1,14 @@
-import {hasLoadCallback} from "./utils";
+import {hasUpdateCallback} from "./utils";
 
 export class Scene extends PIXI.Container {
-  constructor({inputs}) {
+  constructor(services) {
     super();
-    this.inputs = inputs;
+    this.services = services;
   }
 
   update(deltaTime) {
     for (const child of this.children) {
-      if (typeof child.update === "function") {
+      if (hasUpdateCallback(child)) {
         child.update(deltaTime);
       }
     }

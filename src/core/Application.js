@@ -29,7 +29,6 @@ import { Inputs } from "./Inputs";
  *   scenes: {[key: string]: Scene}
  * }} ApplicationOptions
  */
-
  
 export class Application extends PIXI_Application {
   /**
@@ -77,8 +76,8 @@ export class Application extends PIXI_Application {
     document.addEventListener("keydown", e => e.key.match(/^Arrow/) && e.preventDefault());
 
     this.inputs = new Inputs();
-    this.ticker.add(this.onUpdate, this);
-    window.addEventListener("resize", () => this.onResize({
+    this.ticker.add(this._onUpdate, this);
+    window.addEventListener("resize", () => this._onResize({
       x: 0, 
       y: 0, 
       width: window.innerWidth, 
@@ -96,17 +95,14 @@ export class Application extends PIXI_Application {
     return Promise.resolve()
     .then(() => this.optionsOnStart())
     .then(() => load(this.loader, this.assets.preload))
-    .then(() => this.onPreload())
+    .then(() => this._onPreload())
     .then(() => load(this.loader, this.assets.load))
-    .then(() => this.onLoad())
+    .then(() => this._onLoad())
     .then(() => load(this.loader, this.assets.postLoad))
-    .then(() => this.onPostLoad())
-    .catch(error => this.onError(error));
+    .then(() => this._onPostLoad())
+    .catch(error => this._onError(error));
   }
 
-  /**
-   * @public
-   */
   getCurrentScene() {
     if (this.scenes[this.currentSceneName]) {
       return this.scenes[this.currentSceneName];
@@ -116,8 +112,6 @@ export class Application extends PIXI_Application {
   }
 
   /**
-   * 
-   * @public
    * @param {string} newScene 
    * @param {[key: string]: any} params 
    */
@@ -172,11 +166,14 @@ export class Application extends PIXI_Application {
     })
   }
 
+  getViewport() {
+    return this.currentViewport;
+  }
+
   /**
-   * @private
    * @param {Rectangle} viewport
    */
-  onResize(viewport) {
+  _onResize(viewport) {
     if (!rectangleEqual(this.currentViewport, viewport)) {
       this.currentViewport = viewport;
       if (!this.scheduledResize) {
@@ -193,10 +190,7 @@ export class Application extends PIXI_Application {
     }
   }
   
-  /**
-   * @private
-   */
-  onPreload() {
+  _onPreload() {
     this.listeners.forEach(listener => {
       if (hasPreloadCallback(listener)) {
         listener.preload(this.stage);
@@ -205,10 +199,7 @@ export class Application extends PIXI_Application {
     return this.optionsOnPreload();
   }
   
-  /**
-   * @private
-   */
-  onLoad() {
+  _onLoad() {
     this.listeners.forEach(listener => {
       if (hasLoadCallback(listener)) {
         listener.load(this.stage);
@@ -217,10 +208,7 @@ export class Application extends PIXI_Application {
     return this.optionsOnLoad();
   }
   
-  /**
-   * @private
-   */
-  onPostLoad() {
+  _onPostLoad() {
     this.listeners.forEach(listener => {
       if (hasPostLoadCallback(listener)) {
         listener.postLoad(this.stage);
@@ -229,10 +217,7 @@ export class Application extends PIXI_Application {
     return this.optionsOnPostLoad();
   }
   
-  /**
-   * @private
-   */
-  onUpdate() {
+  _onUpdate() {
     const deltaTime = this.ticker.elapsedMS;
     this.listeners.forEach(listener => {
       if (hasUpdateCallback(listener)) {
@@ -241,10 +226,7 @@ export class Application extends PIXI_Application {
     });
   }
 
-  /**
-   * @private
-   */
-  onError(error) {
+  _onError(error) {
     this.listeners.forEach(listener => {
       if (hasErrorCallback(listener)) {
         listener.error();

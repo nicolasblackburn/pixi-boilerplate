@@ -103,15 +103,19 @@ export function animate(duration, update, options) {
     play: () => options.master.play(),
     stop: () => options.master.stop(),
     subscribe: observer => {
-      observer = typeof observer === 'function' ? {update: observer, complete: () => { return; }} : observer;
+      observer = typeof observer === 'function' ? {update: observer} : observer;
       return options.master.subscribe({
         ...observer,
         update: (time, deltaTime) => {
           time = Math.min(duration, time);
-          observer.update(time, deltaTime);
+          if (observer.update) {
+            observer.update(time, deltaTime);
+          }
           if (stop(time, deltaTime)) {
             animation.stop();
-            observer.complete(time, deltaTime);
+            if (observer.complete) {
+              observer.complete(time, deltaTime);
+            }
           }
         }
       });
