@@ -130,7 +130,13 @@ export class Application extends PIXI_Application {
     .then(() => {
       if (!this.loadedScenes[newScene]) {
         return Promise.resolve()
-          .then(() => this.scenes[newScene].load())
+          .then(() => {
+            if (typeof this.scenes[newScene].load === "function") {
+              return this.scenes[newScene].load();
+            } else {
+              return Promise.resolve();
+            }
+          })
           .then(() => this.loadedScenes[newScene] = true);
       } else {
         return Promise.resolve();
