@@ -1,4 +1,4 @@
-export class KeyboardInput {
+export class KeyboardInputs {
   constructor({application}) {
     this.application = application;
   }

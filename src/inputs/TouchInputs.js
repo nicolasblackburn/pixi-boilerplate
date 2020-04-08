@@ -1,8 +1,17 @@
 import { MultiTouch } from "./MultiTouch";
 import { TouchRegion } from "./TouchRegion";
+import { sub, mult, abs } from "../core/geom";
+const { min } = Math;
 
 export class TouchInput {
-  constructor({application, axisRegion, button0Region, button1Region, debug}) {
+  constructor({
+    application, 
+    axisRegion, 
+    axisDistance,
+    button0Region, 
+    button1Region, 
+    debug
+  }) {
     this.application = application;
     this.state = {
       axis: {
@@ -49,8 +58,11 @@ export class TouchInput {
 
     this.axis.on(({type, from, to}) => {
       if (type === 'touchmove') {
-        this.state.axis.x = to.x - from.x;
-        this.state.axis.y = to.y - from.y;
+        let displacement = sub(to, from);
+        const mag = abs(displacement);
+        displacement = mult(1 / mag * min(axisDistance, mag) / axisDistance, displacement);
+        this.state.axis.x = displacement.x;
+        this.state.axis.y = displacement.y;
       } else {
         this.state.axis.x = 0;
         this.state.axis.y = 0;
