@@ -11,13 +11,15 @@ import {
   timeout
 } from "./utils";
 import { Inputs } from "./Inputs";
+import { TouchInput } from "../input/TouchInput";
 
 /**
  * @typedef {{
-  *   exit?(oldScene: string, params: {[key: string]: any}): void,
-  *   enter?(newScene: string, params: {[key: string]: any}, oldScene: string): void
-  * }} Scene
-  */
+ *   load?(): void,
+ *   exit?(oldScene: string, params: {[key: string]: any}): void,
+ *   enter?(newScene: string, params: {[key: string]: any}, oldScene: string): void
+ * }} Scene
+ */
 
 /**
  * @typedef {{
@@ -36,14 +38,15 @@ export class Application extends PIXI_Application {
    * @param {ApplicationOptions} options 
    */
   constructor(options) {
-    super(options);
+    super({
+      antialias: true,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      resolution: window.pixelDeviceResolution,
+      ...options
+    });
 
     options = {
-      onStart: () => { return; },
-      onPreload: () => { return; },
-      onLoad: () => { return; },
-      onPostLoad: () => { return; },
-      onResize: () => { return; },
       ...options,
       assets: {
         ...options.assets
@@ -65,42 +68,68 @@ export class Application extends PIXI_Application {
       height: window.innerHeight
     };
     this.scheduledResize = null;
-    this.optionsOnStart = options.onStart;
-    this.optionsOnPreload = options.onPreload;
-    this.optionsOnLoad = options.onLoad;
-    this.optionsOnPostLoad = options.onPostLoad;
-    this.optionsOnResize = options.onResize;
 
     document.body.appendChild(this.view);
-
     document.addEventListener("keydown", e => e.key.match(/^Arrow/) && e.preventDefault());
 
     this.inputs = new Inputs();
-    this.ticker.add(this._onUpdate, this);
-    window.addEventListener("resize", () => this._onResize({
+    this.ticker.add(this.update, this);
+    window.addEventListener("resize", () => this.onResize({
       x: 0, 
       y: 0, 
       width: window.innerWidth, 
       height: window.innerHeight
     }));
+  }
 
+  init() {
+    return Promise.resolve()
+    .then(() => this.initServices())
+    .then(() => this.initScenes())
+    .then(() => this.preload())
+    .then(() => this.load())
+    .then(() => this.postLoad())
+    .catch(error => this.error(error));
+  }
+
+  /**
+   * @protected
+   */
+  initServices() {
+    this.services = {
+      inputs: new TouchInput({
+        application: this,
+        axisRegion: {
+          x: 0,
+          y: 0.5,
+          width: 0.5,
+          height: 0.5
+        },
+        button0Region: {
+          x: 0.5,
+          y: 0.4,
+          width: 0.5,
+          height: 0.3
+        },
+        button1Region: {
+          x: 0.5,
+          y: 0.7,
+          width: 0.5,
+          height: 0.3
+        }
+      })
+    };
+  }
+
+  /**
+   * @protected
+   */
+  initScenes() {
     for (const [key, value] of Object.entries(this.scenes)) {
       if (typeof value === "function") {
         this.scenes[key] = value(this);
       }
     } 
-  }
-
-  startGame() {
-    return Promise.resolve()
-    .then(() => this.optionsOnStart())
-    .then(() => load(this.loader, this.assets.preload))
-    .then(() => this._onPreload())
-    .then(() => load(this.loader, this.assets.load))
-    .then(() => this._onLoad())
-    .then(() => load(this.loader, this.assets.postLoad))
-    .then(() => this._onPostLoad())
-    .catch(error => this._onError(error));
   }
 
   getCurrentScene() {
@@ -177,15 +206,16 @@ export class Application extends PIXI_Application {
   }
 
   /**
+   * @protected
    * @param {Rectangle} viewport
    */
-  _onResize(viewport) {
+  onResize(viewport) {
+    this.renderer.resize(viewport.width, viewport.height);
     if (!rectangleEqual(this.currentViewport, viewport)) {
       this.currentViewport = viewport;
       if (!this.scheduledResize) {
         this.scheduledResize = timeout(this.ticker, 200, () => {
           this.scheduledResize = null;
-          this.optionsOnResize(this.currentViewport);
           this.listeners.forEach(listener => {
             if (hasResizeCallback(listener)) {
               listener.resize(this.currentViewport);
@@ -196,34 +226,31 @@ export class Application extends PIXI_Application {
     }
   }
   
-  _onPreload() {
-    this.listeners.forEach(listener => {
-      if (hasPreloadCallback(listener)) {
-        listener.preload(this.stage);
-      }
-    });
-    return this.optionsOnPreload();
+  /**
+   * @protected
+   */
+  preload() {
+    return load(this.loader, this.assets.preload);
   }
   
-  _onLoad() {
-    this.listeners.forEach(listener => {
-      if (hasLoadCallback(listener)) {
-        listener.load(this.stage);
-      }
-    });
-    return this.optionsOnLoad();
+  /**
+   * @protected
+   */
+  load() {
+    return load(this.loader, this.assets.load);
   }
   
-  _onPostLoad() {
-    this.listeners.forEach(listener => {
-      if (hasPostLoadCallback(listener)) {
-        listener.postLoad(this.stage);
-      }
-    });
-    return this.optionsOnPostLoad();
+  /**
+   * @protected
+   */
+  postLoad() {
+    return load(this.loader, this.assets.postLoad);
   }
   
-  _onUpdate() {
+  /**
+   * @protected
+   */
+  update() {
     const deltaTime = this.ticker.elapsedMS;
     this.listeners.forEach(listener => {
       if (hasUpdateCallback(listener)) {
@@ -232,7 +259,10 @@ export class Application extends PIXI_Application {
     });
   }
 
-  _onError(error) {
+  /**
+   * @protected
+   */
+  error(error) {
     this.listeners.forEach(listener => {
       if (hasErrorCallback(listener)) {
         listener.error();

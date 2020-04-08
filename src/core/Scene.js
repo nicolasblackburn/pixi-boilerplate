@@ -1,9 +1,9 @@
 import {hasUpdateCallback} from "./utils";
 
 export class Scene extends PIXI.Container {
-  constructor(services) {
+  constructor(application) {
     super();
-    this.services = services;
+    this.application = application;
   }
 
   update(deltaTime) {

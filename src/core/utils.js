@@ -25,8 +25,10 @@ export function rectangleEqual(rectangle1, rectangle2) {
  * @param {{[key: string]: string}} assets 
  */
 export function load(loader, assets) {
-  return () => new Promise((resolve, reject) => {
-    Object.entries(assets).forEach(([id, asset]) => loader.add(id, asset));
+  return new Promise((resolve, reject) => {
+    for (const [id, url] of Object.entries(assets)) {
+      loader.add(id, url);
+    }
     loader.onError.once(reject);
     loader.load(resolve);
   });
