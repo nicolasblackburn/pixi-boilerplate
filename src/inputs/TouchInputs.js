@@ -1,17 +1,17 @@
-import { MultiTouch } from "./MultiTouch";
-import { TouchRegion } from "./TouchRegion";
-import { sub, mult, abs } from "../core/geom";
+import { MultiTouch } from "pixi-boilerplate/inputs/MultiTouch";
+import { TouchRegion } from "pixi-boilerplate/inputs/TouchRegion";
+import { sub, mult, abs } from "pixi-boilerplate/geom";
 const { min } = Math;
 
 export class TouchInput {
   constructor({
-    application, 
+    services, 
     axisDistance,
     regions,
     state,
     debug
   }) {
-    this.application = application;
+    this.services = services;
     this.state = state;
 
     if (debug) {
@@ -27,7 +27,7 @@ export class TouchInput {
       document.body.appendChild(debugText);
     }
 
-    const multiTouch = new MultiTouch(application.renderer.plugins.interaction);
+    const multiTouch = new MultiTouch(services.interaction);
     
     this.axis = new TouchRegion({
       multiTouch,

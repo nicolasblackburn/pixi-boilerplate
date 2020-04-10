@@ -2,8 +2,8 @@ import { abs, mult } from "pixi-boilerplate/geom";
 const { min } = Math;
 
 export class KeyboardInputs {
-  constructor({application, keys, state}) {
-    this.application = application;
+  constructor({services, keys, state}) {
+    this.services = services;
     this.keys = {
       [keys.axisUp]: {axis: {y: -1}},
       [keys.axisRight]: {axis: {x: 1}},
@@ -26,20 +26,21 @@ export class KeyboardInputs {
           Object.assign(this.state[prop], value);
         }
       }
+      if (this.state.axis.x !== 0 || this.state.axis.y !== 0) {
+        const mag = abs(this.state.axis);
+        this.state.axis = mult(1 / mag, this.state.axis);
+      }
     };
 
     document.addEventListener('keydown', ({code}) => {
-      if (this.keys[code] && !this.cache.includes(code)) {
+      if (!this.cache.includes(code)) {
         this.cache.push(code);
       }
       update();
     });
 
     document.addEventListener('keyup', ({code}) => {
-      if (this.keys[code] && this.cache.includes(code)) {
-        const index = this.cache.indexOf(code);
-        this.cache.splice(index, 1);
-      }
+      this.cache = this.cache.filter(codeB => codeB !== code);
       update();
     });
   }

@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";  
-import { Application } from "./core/Application";
-import { Scene } from "./core/Scene";
-import { MainScene } from "./scene/MainScene";
+import { Application } from "./Application";
+import { Scene } from "./scenes/Scene";
+import { MainScene } from "./scenes/MainScene";
 
 window.app = new Application({
   antialias: true,

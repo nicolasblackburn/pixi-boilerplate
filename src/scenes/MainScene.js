@@ -1,4 +1,4 @@
-import {Scene} from "../core/Scene";
+import {Scene} from "pixi-boilerplate/scenes/Scene";
 
 export class MainScene extends Scene {
   load() {

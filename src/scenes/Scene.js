@@ -1,9 +1,9 @@
-import {hasUpdateCallback} from "./utils";
+import {hasUpdateCallback} from "pixi-boilerplate/utils";
 
 export class Scene extends PIXI.Container {
-  constructor(application) {
+  constructor(services) {
     super();
-    this.application = application;
+    this.services = services;
   }
 
   update(deltaTime) {

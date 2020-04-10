@@ -1,8 +1,8 @@
 export class Scenes {
-  constructor(options) {
-    this.application = options.application;
-    this.scenes = options.scenes;
-    this.loadedScenes = Object.keys(options.scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
+  constructor({scenes, services}) {
+    this.services = services;
+    this.scenes = scenes;
+    this.loadedScenes = Object.keys(scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
     this.currentSceneName = null;
     this.initScenes();
   }
@@ -22,12 +22,12 @@ export class Scenes {
   play(newScene, params) {
     const previousScene = this.currentSceneName;
     if (this.scenes[previousScene]) {
-      this.application.stage.addChildAt(
+      this.services.stage.addChildAt(
         this.scenes[newScene], 
-        this.application.stage.getChildIndex(previousScene)
+        this.services.stage.getChildIndex(previousScene)
       );
     } else {
-      this.application.stage.addChild(this.scenes[newScene]);
+      this.services.stage.addChild(this.scenes[newScene]);
     }
 
     return Promise.resolve()
@@ -63,11 +63,7 @@ export class Scenes {
     })
     .then(() => {
       if (this.scenes[previousScene]) {
-        this.application.stage.removeChild(this.scenes[previousScene]);
-        this.application.removeListener(this.scenes[previousScene]);
-      }
-      if (this.scenes[newScene]) {
-        this.application.addListener(this.scenes[newScene]);
+        this.services.stage.removeChild(this.scenes[previousScene]);
       }
     })
   }
@@ -78,8 +74,28 @@ export class Scenes {
   initScenes() {
     for (const [key, value] of Object.entries(this.scenes)) {
       if (typeof value === "function") {
-        this.scenes[key] = value(this.application);
+        this.scenes[key] = value(this.services);
       }
     } 
+  }
+
+  /**
+   * @public
+   * @param {number} dt 
+   */
+  update(dt) {
+    if (this.current && this.current.update) {
+      this.current.update(dt);
+    }
+  }
+
+  /**
+   * @public
+   * @param {PIXI.Rectangle} viewport 
+   */
+  resize(viewport) {
+    if (this.current && this.current.resize) {
+      this.current.resize(viewport);
+    }
   }
 }

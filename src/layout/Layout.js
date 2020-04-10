@@ -1,7 +1,7 @@
 import { rectangleEqual, timeout } from "pixi-boilerplate/utils";
 
 export class Layout {
-  constructor(application) {
+  constructor(services) {
     // @public
     this.events = new PIXI.utils.EventEmitter();
 
@@ -9,7 +9,7 @@ export class Layout {
     this.currentViewport = new PIXI.Rectangle(0, 0, window.innerWidth, window.innerHeight);
 
     // @protected
-    this.application = application;
+    this.services = services;
 
     // @protected
     this.scheduledResize = null;
@@ -37,7 +37,7 @@ export class Layout {
     if (!rectangleEqual(this.currentViewport, viewport)) {
       this.currentViewport = viewport;
       if (!this.scheduledResize) {
-        this.scheduledResize = timeout(this.application.ticker, 200, () => {
+        this.scheduledResize = timeout(this.services.ticker, 200, () => {
           this.scheduledResize = null;
           this.triggerResize();
         });
