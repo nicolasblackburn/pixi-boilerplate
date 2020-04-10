@@ -208,7 +208,7 @@ export class Application {
    * @protected
    */
   initRenderer() {
-    this.services.renderer = window.localStorage;
+    this.services.renderer = this.application.renderer;
   }
 
   /**

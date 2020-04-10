@@ -1,14 +1,12 @@
-import {hasUpdateCallback} from "pixi-boilerplate/utils";
-
-export class Scene extends PIXI.Container {
+export class Scene {
   constructor(services) {
-    super();
     this.services = services;
+    this.container = new PIXI.Container();
   }
 
   update(deltaTime) {
     for (const child of this.children) {
-      if (hasUpdateCallback(child)) {
+      if (child.update) {
         child.update(deltaTime);
       }
     }

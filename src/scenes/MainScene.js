@@ -7,6 +7,6 @@ export class MainScene extends Scene {
     });
     text.anchor.set(0.5, 1);
     text.position.set(100, 100);
-    this.addChild(text);
+    this.container.addChild(text);
   }
 }
