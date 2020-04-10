@@ -3,6 +3,8 @@ import { load } from "./utils";
 import { TouchInput as TouchInputs } from "../inputs/TouchInputs";
 import { Layout } from "../layout/Layout";
 import { Scenes } from "./Scenes";
+import { InputState as InputsState } from "../inputs/InputsState";
+import { KeyboardInputs } from "../inputs/KeyboardInputs";
 
 /**
  * @typedef {{
@@ -96,28 +98,49 @@ export class Application extends PIXI_Application {
   }
 
   initInputs() {
-    this.services.inputs = new TouchInputs({
+    const state = new InputsState;
+    const touchInputs = new TouchInputs({
       application: this,
-      axisRegion: {
-        x: 0,
-        y: 0.5,
-        width: 0.5,
-        height: 0.5
-      },
+      state,
       axisDistance: 50,
-      button0Region: {
-        x: 0.5,
-        y: 0.4,
-        width: 0.5,
-        height: 0.3
-      },
-      button1Region: {
-        x: 0.5,
-        y: 0.7,
-        width: 0.5,
-        height: 0.3
+      regions: {
+        axis: {
+          x: 0,
+          y: 0.5,
+          width: 0.5,
+          height: 0.5
+        },
+        button0: {
+          x: 0.5,
+          y: 0.4,
+          width: 0.5,
+          height: 0.3
+        },
+        button1: {
+          x: 0.5,
+          y: 0.7,
+          width: 0.5,
+          height: 0.3
+        }
       }
     });
+    const keyboardInputs = new KeyboardInputs({
+      application: this.application,
+      state,
+      keys: {
+        axisUp: "KeyD",
+        axisRight: "KeyC",
+        axisDown: "KeyX",
+        axisLeft: "KeyS",
+        button0: "KeyI",
+        button1: "KeyO"
+      }
+    });
+    this.services.inputs = {
+      state,
+      touchInputs,
+      keyboardInputs
+    };
   }
 
   initScenes() {

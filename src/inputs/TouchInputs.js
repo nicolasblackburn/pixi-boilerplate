@@ -6,25 +6,13 @@ const { min } = Math;
 export class TouchInput {
   constructor({
     application, 
-    axisRegion, 
     axisDistance,
-    button0Region, 
-    button1Region, 
+    regions,
+    state,
     debug
   }) {
     this.application = application;
-    this.state = {
-      axis: {
-        x: 0,
-        y: 0
-      },
-      button0: {
-        pressed: false
-      },
-      button1: {
-        pressed: false
-      }
-    };
+    this.state = state;
 
     if (debug) {
       const debugText = document.createElement("textarea");
@@ -43,26 +31,31 @@ export class TouchInput {
     
     this.axis = new TouchRegion({
       multiTouch,
-      region: axisRegion
+      region: regions.axis
     });
     
     this.button0 = new TouchRegion({
       multiTouch,
-      region: button0Region
+      region: regions.button0
     });
 
     this.button1 = new TouchRegion({
       multiTouch,
-      region: button1Region
+      region: regions.button1
     });
 
     this.axis.on(({type, from, to}) => {
       if (type === 'touchmove') {
         let displacement = sub(to, from);
-        const mag = abs(displacement);
-        displacement = mult(1 / mag * min(axisDistance, mag) / axisDistance, displacement);
-        this.state.axis.x = displacement.x;
-        this.state.axis.y = displacement.y;
+        if (displacement.x === 0 && displacement.y === 0) {
+          this.state.axis.x = 0;
+          this.state.axis.y = 0;
+        } else {
+          const mag = abs(displacement);
+          displacement = mult(1 / mag * min(axisDistance, mag) / axisDistance, displacement);
+          this.state.axis.x = displacement.x;
+          this.state.axis.y = displacement.y;
+        }
       } else {
         this.state.axis.x = 0;
         this.state.axis.y = 0;
