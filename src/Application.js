@@ -1,10 +1,8 @@
 import { load, notify } from "pixi-boilerplate/utils";
-import { TouchInput as TouchInputs } from "pixi-boilerplate/inputs/TouchInputs";
 import { Layout } from "pixi-boilerplate/layout/Layout";
-import { Scenes } from "pixi-boilerplate/scenes/Scenes";
-import { InputsState } from "pixi-boilerplate/inputs/InputsState";
-import { KeyboardInputs } from "pixi-boilerplate/inputs/KeyboardInputs";
+import { SceneController } from "pixi-boilerplate/scenes/SceneController";
 import { Physics } from "pixi-boilerplate/physics/Physics";
+import { Inputs } from "./inputs/Inputs";
 
 /**
  * @typedef {{
@@ -42,7 +40,7 @@ export class Application {
     };
 
     /**
-     * protected
+     * @protected
      */
     this.options = {
       assets: options.assets,
@@ -50,7 +48,7 @@ export class Application {
     };
 
     /**
-     * protected
+     * @protected
      */
     this.application = new PIXI.Application({
       antialias: true,
@@ -61,12 +59,12 @@ export class Application {
     });
 
     /**
-     * protected
+     * @protected
      */
     this.listeners = [];
 
     /**
-     * protected
+     * @protected
      */
     this.services = {
       inputs: null,
@@ -130,49 +128,7 @@ export class Application {
    * @protected
    */
   initInputs() {
-    const state = new InputsState;
-    const touchInputs = new TouchInputs({
-      services: this.services,
-      state,
-      axisDistance: 50,
-      regions: {
-        axis: {
-          x: 0,
-          y: 0.5,
-          width: 0.5,
-          height: 0.5
-        },
-        button0: {
-          x: 0.5,
-          y: 0.4,
-          width: 0.5,
-          height: 0.3
-        },
-        button1: {
-          x: 0.5,
-          y: 0.7,
-          width: 0.5,
-          height: 0.3
-        }
-      }
-    });
-    const keyboardInputs = new KeyboardInputs({
-      services: this.services,
-      state,
-      keys: {
-        axisUp: "ArrowUp",
-        axisRight: "ArrowRight",
-        axisDown: "ArrowDown",
-        axisLeft: "ArrowLeft",
-        button0: "KeyX",
-        button1: "KeyC"
-      }
-    });
-    this.services.inputs = {
-      state,
-      touchInputs,
-      keyboardInputs
-    };
+    this.services.inputs = new Inputs(this.services);
   }
 
   /**
@@ -202,6 +158,7 @@ export class Application {
    */
   initPhysics() {
     this.services.physics = new Physics(this.services);
+    this.addListener(this.services.physics);
   }
 
   /**
@@ -215,7 +172,7 @@ export class Application {
    * @protected
    */
   initScenes() {
-    const scenes = new Scenes({
+    const scenes = new SceneController({
       services: this.services,
       scenes: this.options.scenes
     });

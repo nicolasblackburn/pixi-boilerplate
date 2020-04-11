@@ -97,17 +97,18 @@ export class MultiTouch {
       interaction.on(event, handler);
     }
 
-    this.on = (fn, priority) => {
-      emitter.on('touchstart', fn, priority);
-      emitter.on('touchmove', fn, priority);
-      emitter.on('touchend', fn, priority);
-      emitter.on('touchendoutside', fn, priority);
+    /**
+     * @public
+     */
+    this.on = (event, fn, priority) => {
+      emitter.on(event, fn, priority);
     };
-    this.off = fn => {
-      emitter.off('touchstart', fn);
-      emitter.off('touchmove', fn);
-      emitter.off('touchend', fn);
-      emitter.off('touchendoutside', fn);
+
+    /**
+     * @public
+     */
+    this.off = (event, fn) => {
+      emitter.off(event, fn);
     };
   }
 }

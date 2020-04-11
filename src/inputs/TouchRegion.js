@@ -35,6 +35,9 @@ function debug(event, start, region) {
 
 export class TouchRegion {
   constructor({multiTouch, region}) {
+    /**
+     * @protected
+     */
     this.region = region;
 
     const emitter = new PIXI.utils.EventEmitter();
@@ -46,9 +49,9 @@ export class TouchRegion {
           start = {
             ...event.touch
           };
-          multiTouch.on(handlers.touchmove);
-          multiTouch.on(handlers.touchend);
-          multiTouch.on(handlers.touchendoutside);
+          multiTouch.on('touchmove', handlers.touchmove);
+          multiTouch.on('touchend', handlers.touchend);
+          multiTouch.on('touchendoutside', handlers.touchendoutside);
 
           emitter.emit(event.type, {
             type: event.type,
@@ -68,9 +71,9 @@ export class TouchRegion {
       touchend: (event) => {
         if (event.type === 'touchend' && start && event.touch.id === start.id) {
           start = undefined;
-          multiTouch.off(handlers.touchmove);
-          multiTouch.off(handlers.touchend);
-          multiTouch.off(handlers.touchendoutside);
+          multiTouch.off('touchmove', handlers.touchmove);
+          multiTouch.off('touchend', handlers.touchend);
+          multiTouch.off('touchendoutside', handlers.touchendoutside);
           emitter.emit(event.type, {
             type: event.type,
             from: start,
@@ -81,9 +84,9 @@ export class TouchRegion {
       touchendoutside: (event) => {
         if (event.type === 'touchendoutside' && start && event.touch.id === start.id) {
           start = undefined;
-          multiTouch.off(handlers.touchmove);
-          multiTouch.off(handlers.touchend);
-          multiTouch.off(handlers.touchendoutside);
+          multiTouch.off('touchmove', handlers.touchmove);
+          multiTouch.off('touchend', handlers.touchend);
+          multiTouch.off('touchendoutside', handlers.touchendoutside);
           emitter.emit(event.type, {
             type: event.type,
             from: start,
@@ -92,19 +95,20 @@ export class TouchRegion {
         }
       }
     };
-    multiTouch.on(handlers.touchstart);
+    multiTouch.on('touchstart', handlers.touchstart);
 
-    this.on = (fn, priority) => {
-      emitter.on('touchstart', fn, priority);
-      emitter.on('touchmove', fn, priority);
-      emitter.on('touchend', fn, priority);
-      emitter.on('touchendoutside', fn, priority);
+    /**
+     * @public
+     */
+    this.on = (event, fn, priority) => {
+      emitter.on(event, fn, priority);
     };
-    this.off = fn => {
-      emitter.off('touchstart', fn);
-      emitter.off('touchmove', fn);
-      emitter.off('touchend', fn);
-      emitter.off('touchendoutside', fn);
+    
+    /**
+     * @public
+     */
+    this.off = (event, fn) => {
+      emitter.off(event, fn);
     };
   }
 }

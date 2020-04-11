@@ -1,17 +1,46 @@
-export class Scenes {
+import { notify } from "../utils";
+
+export class SceneController {
   constructor({scenes, services}) {
+    /**
+     * protected
+     */
     this.activeScenes = [];
+
+    /**
+     * protected
+     */
     this.services = services;
+
+    /**
+     * protected
+     */
     this.scenes = scenes;
+
+    /**
+     * protected
+     */
     this.loadedScenes = Object.keys(scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
+
+    /**
+     * protected
+     */
     this.currentSceneName = null;
+    
     this.initScenes();
   }
 
+  /**
+   * @public
+   */
   get current() {
     return this.scenes[this.currentSceneName];
   }
 
+  /**
+   * @public
+   * @param {string} sceneName 
+   */
   get(sceneName) {
     return this.scenes[sceneName];
   }
@@ -89,12 +118,10 @@ export class Scenes {
 
   /**
    * @public
-   * @param {number} dt 
+   * @param {number} deltaTime
    */
-  update(dt) {
-    if (this.current && this.current.update) {
-      this.current.update(dt);
-    }
+  update(deltaTime) {
+    this.notify('update', deltaTime);
   }
 
   /**
@@ -102,9 +129,7 @@ export class Scenes {
    * @param {PIXI.Rectangle} viewport 
    */
   resize(viewport) {
-    if (this.current && this.current.resize) {
-      this.current.resize(viewport);
-    }
+    this.notify('resize', viewport);
   }
 
   /**

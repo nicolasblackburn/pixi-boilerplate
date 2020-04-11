@@ -47,14 +47,14 @@ export class Physics {
 
   /**
    * @public
-   * @param {number} dt 
+   * @param {number} deltaTime 
    */
-  update(dt) {
+  update(deltaTime) {
     for (const body of this.bodies) {
-      body.velocity.x += body.acceleration.x * dt / 1000;
-      body.velocity.y += body.acceleration.y * dt / 1000;
-      body.position.x += body.velocity.x * dt / 1000;
-      body.position.y += body.velocity.y * dt / 1000;
+      body.velocity.x += body.acceleration.x * deltaTime / 1000;
+      body.velocity.y += body.acceleration.y * deltaTime / 1000;
+      body.position.x += body.velocity.x * deltaTime / 1000;
+      body.position.y += body.velocity.y * deltaTime / 1000;
 
       body.position.x = Math.min(
         this.bounds.x + this.bounds.width - body.bounds.width * body.anchor.x,

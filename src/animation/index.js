@@ -2,6 +2,24 @@ export function lerp(from, to) {
   return t => (1 - t) * from + t * to;
 }
 
+export function interpolate(...points) {
+    return t => {
+        let value = 0;
+        for (let i = 0; i < points.length; i++) {
+            const [ti, xi] = (typeof points[i] === "number" ? [points[i], points[i]] : points[i]);
+            let term = xi;
+            for (let j = 0; j < points.length; j++) {
+                if (j !== i) {
+                    const [tj] = points[j];
+                    term *= (t - tj) / (ti - tj);
+                }
+            }
+            value += term;
+        }
+        return value;
+    };
+}
+
 export function quadIn(t) {
   return t * t;
 }
