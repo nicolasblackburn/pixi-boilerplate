@@ -36,15 +36,15 @@ export class Inputs {
         },
         button0: {
           x: 0.5,
-          y: 0,
+          y: 0.5,
           width: 0.5,
-          height: 0.7
+          height: 0.5
         },
         button1: {
           x: 0.5,
-          y: 0.7,
+          y: 0,
           width: 0.5,
-          height: 0.3
+          height: 0.5
         }
       }
     });

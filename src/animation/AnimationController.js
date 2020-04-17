@@ -33,5 +33,6 @@ export class AnimationController extends StateController {
 
     this.currentName = name;
     animation.play();
+    return animation;
   }
 }

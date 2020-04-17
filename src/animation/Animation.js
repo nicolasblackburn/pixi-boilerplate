@@ -1,27 +1,27 @@
 export class Animation {
-    constructor({onUpdate, paused, ...options}) {
+    constructor({paused, ...options}) {
         const {
             duration,
             onComplete,
+            onStart,
+            onUpdate, 
             ticker
         } = {
             duration: Number.POSITIVE_INFINITY,
             ticker: Animation.sharedTicker, 
             onComplete: () => null,
+            onStart: () => null,
+            onUpdate: () => null,
             ...options
         };
 
-        let startTime;
+        const emitter = new PIXI.utils.EventEmitter();
+        let started = false;
         let elapsedTime;
 
         const updateTicker = () => {
             if (!paused) {
-                const newTime = this.time + ticker.elapsedMS;
-                this.time = Math.min(duration, newTime);
-                if (newTime >= duration) {
-                    this.pause();
-                    onComplete(newTime);
-                }
+                this.time += ticker.elapsedMS;
             }
         };
 
@@ -35,8 +35,20 @@ export class Animation {
                 },
 
                 set(time) {
+                    const completeOnce = () => {
+                        if (started) {
+                            started = false;
+                            this.pause();
+                            onComplete(time);
+                            emitter.emit('complete', time);
+                        }
+                    };
+                    onUpdate(Math.min(time, duration), completeOnce);
+                    emitter.emit('update', time);
                     elapsedTime = time;
-                    onUpdate(elapsedTime);
+                    if (time >= duration) {
+                        completeOnce();
+                    }
                 }
             },
 
@@ -67,9 +79,13 @@ export class Animation {
         this.play = () => {
             if (paused) {
                 paused = false;
-                startTime = performance.now();
-                this.time = 0;
                 ticker.add(updateTicker);
+                if (!started) {
+                    started = true;
+                    this.time = 0;
+                    onStart();
+                    emitter.emit('start');
+                }
             }
         };
 
@@ -83,7 +99,22 @@ export class Animation {
             }
         };
 
+        /**
+         * @public
+         */
+        this.on = (event, fn, priority) => {
+            emitter.on(event, fn, priority);
+        };
+      
+        /**
+         * @public
+         */
+        this.off = (event, fn) => {
+            emitter.off(event, fn);
+        };
+
         if (!paused) {
+            paused = true;
             this.play();
         }
     }

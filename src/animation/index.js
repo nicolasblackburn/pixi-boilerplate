@@ -2,6 +2,10 @@ export function lerp(from, to) {
   return t => (1 - t) * from + t * to;
 }
 
+export function olerp(from, to) {
+  return t => map(f => f(t), map(([v0, v1]) => lerp(v0, v1), join(from, to)))
+}
+
 export function interpolate(...points) {
     return t => {
         let value = 0;

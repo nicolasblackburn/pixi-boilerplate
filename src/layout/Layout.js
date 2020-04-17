@@ -10,7 +10,7 @@ export class Layout {
     /**
      * @public
      */
-    this.currentViewport = new PIXI.Rectangle(0, 0, window.innerWidth, window.innerHeight);
+    this.viewport = new PIXI.Rectangle(0, 0, window.innerWidth, window.innerHeight);
 
     /**
      * @protected
@@ -34,7 +34,7 @@ export class Layout {
    * @protected
    */
   triggerResize() {
-    this.events.emit("resize", this.currentViewport);
+    this.events.emit("resize", this.viewport);
   } 
 
   /**
@@ -42,8 +42,8 @@ export class Layout {
    * @param {Rectangle} viewport
    */
   resize(viewport) {
-    if (!rectangleEqual(this.currentViewport, viewport)) {
-      this.currentViewport = viewport;
+    if (!rectangleEqual(this.viewport, viewport)) {
+      this.viewport = viewport;
       if (!this.scheduledResize) {
         this.scheduledResize = timeout(this.services.ticker, 200, () => {
           this.scheduledResize = null;
