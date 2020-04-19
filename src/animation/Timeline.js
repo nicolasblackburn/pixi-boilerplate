@@ -4,29 +4,22 @@ export class Timeline extends Animation {
   constructor(options = {}) {
     const {onUpdate, duration: _, ...restOptions} = options;
     const state = {
+      animations: [],
       events: [],
       actives: [],
-      currentIndex: 0
+      currentIndex: 0,
+      lastTime: 0
     };
     super({
       onUpdate: t => {
-        if (state.events.length) {
-          let current = state.events[state.currentIndex];
-          //console.log(t, current.time, state.currentIndex);
-          while (current && t >= current.time) {
-            console.log(t, current.event, current.time);
-            state.currentIndex++;
-            current = state.events[state.currentIndex];
-          }
-        } 
+        update(t, state);
         if (onUpdate) {
             onUpdate(t);
         }
+        state.lastTime = t;
       },
       ...restOptions
     });
-
-    this.state = state;
 
     Object.defineProperties(this, {
       /**
@@ -34,45 +27,62 @@ export class Timeline extends Animation {
        */
       duration: {
         get: () => {
-          if (!state.events.length) {
+          if (!state.animations.length) {
             return 0;
           } else {
-            return state.events[state.events.length - 1].time - state.events[0].time;
+            const [min, max] = state.animations.reduce(([min, max], {startTime, animation}) =>
+              [Math.min(min, startTime), Math.max(max, startTime + animation.duration)], 
+              [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]);
+            return max - min;
           }
         }
       }
     });
 
-    this.add = (animation, time) => {
+    this.add = (animation, startTime) => {
       animation.pause();
-      if (time === undefined) {
-        state.events = appendEvent('end', 0, animation, appendEvent('start', 0, animation, state.events));
+      if (startTime === undefined) {
+        state.animations.push({startTime: this.duration, active: false, animation});
       } else {
-        state.events = insertEvent('end', time + animation.duration, animation, insertEvent('start', time, animation, state.events));
+        state.animations.push({startTime, active: false, animation});
       }
       return this;
     };
   }
 }
 
-function insertEvent(event, time, animation, events) {
-  if (!events.length) {
-    return [{event, time, animation}];
-  } else {
-    const [first, ...rest] = events;
-    if (time < first.time) {
-      return [{event, time, animation}, ...events];
-    } else {
-      return [first, ...insertEvent(event, time, animation, rest)];
+function update(time, state) {
+  if (time < state.lastTime) {
+    // Rewind animation
+    for (const entry of state.animations.reverse()) {
+      const {startTime, active, animation} = entry;
+      if (time <= startTime && startTime <= state.lastTime && !active) {
+        entry.active = false;
+        animation.time = 0;
+      }
     }
-  }
-}
 
-function appendEvent(event, time, animation, events) {
-  if (!events.length) {
-    return [{event, time, animation}];
-  } else {
-    const [first, ...rest] = events;
-    return [first, ...appendEvent(event, first.time + first.animation.duration, animation, rest)];
+  } else if (time > state.lastTime) {
+    const actives = [];
+    for (const entry of state.animations) {
+      const {startTime, animation} = entry;
+      const endTime = startTime + animation.duration;
+      if (state.lastTime <= startTime && startTime <= time && !entry.active) {
+        entry.active = true;
+      }
+      if (state.lastTime <= endTime && endTime <= time && entry.active) {
+        entry.active = false;
+        animation.time = time - startTime;
+      }
+      if (entry.active) {
+        actives.push(entry);
+      }
+    }
+    
+    for (const {startTime, animation} of actives) {
+      animation.time = time - startTime;
+    }
+
+    state.lastTime = time;
   }
 }

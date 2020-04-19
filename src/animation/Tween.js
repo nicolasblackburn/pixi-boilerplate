@@ -9,7 +9,7 @@ export class Tween extends Animation {
             onUpdate: t => {
                 Object.assign(
                     target, 
-                    valueAt(t)
+                    valueAt(Math.min(t, duration))
                 );
                 if (onUpdate) {
                     onUpdate(t);
@@ -20,6 +20,7 @@ export class Tween extends Animation {
         });
         this.valueAt = valueAt;
     }
+
     static fromTo(target, duration, from, to) {
         return new Tween(target, duration, from, to);
     }

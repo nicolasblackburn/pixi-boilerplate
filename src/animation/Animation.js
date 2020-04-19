@@ -1,12 +1,16 @@
+let ids = 0;
+
 export class Animation {
     constructor({paused, ...options}) {
         const {
+            id,
             duration,
             onComplete,
             onStart,
             onUpdate, 
             ticker
         } = {
+            id: (new Date().getTime() + (ids++)).toString(16),
             duration: Number.POSITIVE_INFINITY,
             ticker: Animation.sharedTicker, 
             onComplete: () => null,
@@ -17,7 +21,7 @@ export class Animation {
 
         const emitter = new PIXI.utils.EventEmitter();
         let started = false;
-        let elapsedTime;
+        let elapsedTime = 0;
 
         const updateTicker = () => {
             if (!paused) {
@@ -38,19 +42,19 @@ export class Animation {
                 },
 
                 set: (time) => {
-                    const completeOnce = () => {
-                        if (started) {
-                            started = false;
-                            this.pause();
-                            onComplete(time);
-                            emitter.emit('complete', time);
-                        }
-                    };
-                    onUpdate(Math.min(time, duration), completeOnce);
+                    if (!started) {
+                        started = true;
+                        onUpdate(0);
+                        onStart();
+                        emitter.emit('start');
+                    }
+                    onUpdate(time);
                     emitter.emit('update', time);
                     elapsedTime = time;
-                    if (time >= duration) {
-                        completeOnce();
+                    if (time >= this.duration) {
+                        this.pause();
+                        onComplete(time);
+                        emitter.emit('complete', time);
                     }
                 }
             },
@@ -79,6 +83,10 @@ export class Animation {
             }
         });
 
+        this.toString = () => {
+            return `[Animation #${id}]`
+        };
+
         /**
          * @public
          */
@@ -86,12 +94,6 @@ export class Animation {
             if (paused) {
                 paused = false;
                 ticker.add(updateTicker);
-                if (!started) {
-                    started = true;
-                    this.time = 0;
-                    onStart();
-                    emitter.emit('start');
-                }
             }
         };
 
