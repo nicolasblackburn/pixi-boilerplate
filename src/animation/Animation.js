@@ -30,11 +30,14 @@ export class Animation {
              * @public
              */
             time: {
-                get() {
+                enumerable: true,
+                configurable: true,
+                
+                get: () => {
                     return elapsedTime;
                 },
 
-                set(time) {
+                set: (time) => {
                     const completeOnce = () => {
                         if (started) {
                             started = false;
@@ -57,6 +60,7 @@ export class Animation {
              * @readonly
              */
             paused: {
+                enumerable: true,
                 get() {
                     return paused;
                 }
@@ -67,6 +71,8 @@ export class Animation {
              * @readonly
              */
             duration: {
+                enumerable: true,
+                configurable: true,
                 get() {
                     return duration;
                 }

@@ -1,5 +1,11 @@
 export function lerp(from, to) {
-  return t => (1 - t) * from + t * to;
+  const t1 = typeof from;
+  const t2 = typeof to;
+  if (t1 === "number" && t1 === t2 && isFinite(from) && isFinite(to)) {
+    return t => (1 - t) * from + t * to;
+  } else {
+    return t => t < 1 ? from : to;
+  }
 }
 
 export function olerp(from, to) {

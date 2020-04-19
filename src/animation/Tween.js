@@ -2,32 +2,26 @@ import {Animation} from "./Animation";
 
 
 export class Tween extends Animation {
-    static fromTo(target, duration, from, to) {
-        const params = {};
-        const keys = [
-            'onComplete',
-            'onStart',
-            'ticker',
-            'paused'
-        ];
-        for (const k of keys) {
-            if (to[k] !== undefined) {
-                params[k] = to[k];
-            }
-        }
-        return new Animation({
+    constructor(target, duration, from, to) {
+        const {onUpdate, duration: _, ...restOptions} = to;
+        const valueAt = t => olerp(from, to)(t / duration);
+        super({
             onUpdate: t => {
                 Object.assign(
                     target, 
-                    olerp(from, to)(t / duration)
+                    valueAt(t)
                 );
-                if (to.onUpdate) {
-                    to.onUpdate(t);
+                if (onUpdate) {
+                    onUpdate(t);
                 }
-            }, 
+            },
             duration,
-            ...params
+            ...restOptions
         });
+        this.valueAt = valueAt;
+    }
+    static fromTo(target, duration, from, to) {
+        return new Tween(target, duration, from, to);
     }
 
     static from(target, duration, from) {
