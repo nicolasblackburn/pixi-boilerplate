@@ -1,4 +1,4 @@
-import {Animation} from "./Animation";
+import {Animation, SkipEvents} from "./Animation";
 
 export class Timeline extends Animation {
   constructor(options = {}) {
@@ -58,7 +58,7 @@ function update(time, state) {
       const {startTime, active, animation} = entry;
       if (time <= startTime && startTime <= state.lastTime && !active) {
         entry.active = false;
-        animation.time = 0;
+        animation.time = new SkipEvents(0);
       }
     }
 

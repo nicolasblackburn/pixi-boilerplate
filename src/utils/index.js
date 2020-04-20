@@ -199,3 +199,25 @@ export function notify(listeners, fnName, ...params) {
     }
   }
 }
+
+export function textureFrom(id) {
+  if (id instanceof PIXI.Texture) {
+    return id;
+  } else if (id === null) {
+    return PIXI.Texture.EMPTY;
+  } else {
+    return PIXI.Texture.from(id);
+  }
+}
+
+export function applyFrame(frame, sprite) {
+  for (const [k, v] of Object.entries(frame)) {
+    if (k === 'texture') {
+      sprite[k] = textureFrom(v);
+    } else if (typeof v !== 'number') {
+      applyFrame(v, sprite[k]);
+    } else {
+      sprite[k] = v;
+    }
+  }
+}

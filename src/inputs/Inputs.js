@@ -26,7 +26,7 @@ export class Inputs {
       services: this.services,
       events: this.events,
       state: this.state,
-      axisDistance: 50,
+      axisDistance: 25,
       regions: {
         axis: {
           x: 0,

@@ -1,5 +1,11 @@
 let ids = 0;
 
+export class SkipEvents {
+    constructor(time) {
+        this.time = time;
+    }
+}
+
 export class Animation {
     constructor({paused, ...options}) {
         const {
@@ -42,19 +48,37 @@ export class Animation {
                 },
 
                 set: (time) => {
+                    let skipEvents = false;
+                    if (time instanceof SkipEvents) {
+                        skipEvents = true;
+                        time = time.time;
+                    }
+                    let once = false;
+                    const completeOnce = () => {
+                        if (!once) {
+                            once = true;
+                            this.pause();
+                            if (!skipEvents) {
+                                onComplete(time);
+                                emitter.emit('complete', time);
+                            }
+                        }
+                    }
                     if (!started) {
                         started = true;
-                        onUpdate(0);
-                        onStart();
-                        emitter.emit('start');
+                        onUpdate(0, completeOnce);
+                        if (!skipEvents) {
+                            onStart();
+                            emitter.emit('start');
+                        }
                     }
-                    onUpdate(time);
-                    emitter.emit('update', time);
-                    elapsedTime = time;
+                    onUpdate(time, completeOnce);
+                    if (!skipEvents) {
+                        emitter.emit('update', time);
+                    }
+                    elapsedTime = Math.min(time, this.duration);
                     if (time >= this.duration) {
-                        this.pause();
-                        onComplete(time);
-                        emitter.emit('complete', time);
+                        completeOnce();
                     }
                 }
             },

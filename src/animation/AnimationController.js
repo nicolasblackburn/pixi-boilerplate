@@ -17,8 +17,9 @@ export class AnimationController extends StateController {
   /**
    * @public
    * @param {string} name 
+   * @param {number} time 
    */
-  play(name) {
+  play(name, time) {
     const previousName = this.currentName;
     const previousAnimation = this.states[previousName];
 
@@ -33,6 +34,11 @@ export class AnimationController extends StateController {
 
     this.currentName = name;
     animation.play();
+
+    if (time !== undefined) {
+      animation.time = 0;
+    }
+
     return animation;
   }
 }
