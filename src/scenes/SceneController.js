@@ -126,7 +126,7 @@ export class SceneController {
 
   /**
    * @public
-   * @param {PIXI.Rectangle} viewport 
+   * @param {Rectangle} viewport 
    */
   resize(viewport) {
     this.notify('resize', viewport);

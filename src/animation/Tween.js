@@ -1,6 +1,5 @@
 import {Animation} from "./Animation";
 
-
 export class Tween extends Animation {
     constructor(target, duration, from, to) {
         const {onUpdate, duration: _, ...restOptions} = to;

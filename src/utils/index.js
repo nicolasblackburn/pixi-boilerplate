@@ -1,11 +1,4 @@
-/**
- * @typedef {{
-*   x: number,
-*   y: number,
-*   width: number,
-*   height: number
-* }} Rectangle
-*/
+import { Texture } from "pixi.js";
 
 /**
 * 
@@ -21,7 +14,7 @@ export function rectangleEqual(rectangle1, rectangle2) {
 
 /**
 * 
-* @param {PIXI.Loader} loader 
+* @param {Loader} loader 
 * @param {{[key: string]: string}} assets 
 */
 export function load(loader, assets) {
@@ -36,7 +29,7 @@ export function load(loader, assets) {
 
 /**
 * 
-* @param {PIXI.Ticker} ticker 
+* @param {Ticker} ticker 
 * @param {number} ms 
 * @param {() => void} callback 
 * @returns {() => void} clearTimeout
@@ -201,12 +194,12 @@ export function notify(listeners, fnName, ...params) {
 }
 
 export function textureFrom(id) {
-  if (id instanceof PIXI.Texture) {
+  if (id instanceof Texture) {
     return id;
   } else if (id === null) {
-    return PIXI.Texture.EMPTY;
+    return Texture.EMPTY;
   } else {
-    return PIXI.Texture.from(id);
+    return Texture.from(id);
   }
 }
 
@@ -220,4 +213,36 @@ export function applyFrame(frame, sprite) {
       sprite[k] = v;
     }
   }
+}
+
+export function frameAnimation(sprite, options) {
+  const {frames, frameDuration, loop,  map, duration: _, ...optionsRest} = {
+    frameDuration: 1 / 80,
+    duration: 0,
+    loop: false,
+    map: x => x,
+    ...options
+  };
+
+  let startTime;
+
+  const animation = new Animation({
+    onUpdate: (time, complete) => {
+      if (startTime === undefined) {
+        startTime = time;
+      }
+      if (time - startTime >= frames.length / frameDuration && !loop) {
+        applyFrame(map(frames[frames.length - 1]), sprite);
+        complete();
+
+      } else {
+        const frame = parseInt(time * frameDuration) % frames.length;
+        applyFrame(map(frames[frame]), sprite);
+      }
+    },
+    paused: true,
+    ...optionsRest
+  });
+
+  return animation;
 }

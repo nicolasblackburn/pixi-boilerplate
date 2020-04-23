@@ -1,13 +1,15 @@
+import { Point } from "pixi.js";
+
 export function add(...points) {
-  return new PIXI.Point(...points.reduce((sum, {x, y}) => [sum[0] + x, sum[1] + y], [0, 0]));
+  return new Point(...points.reduce((sum, {x, y}) => [sum[0] + x, sum[1] + y], [0, 0]));
 }
 
 export function sub({x, y}, ...points) {
-  return new PIXI.Point(...points.reduce((sum, {x, y}) => [sum[0] - x, sum[1] - y], [x, y]));
+  return new Point(...points.reduce((sum, {x, y}) => [sum[0] - x, sum[1] - y], [x, y]));
 }
 
 export function mult(a, {x, y}) {
-  return new PIXI.Point(a * x, a * y);
+  return new Point(a * x, a * y);
 }
 
 export function abs({x, y}) {
@@ -19,7 +21,7 @@ export function scalar({x: x1, y: y1}, {x: x2, y: y2}) {
 }
 
 export function box({x, y, width, height}, {x: x1, y: y1}) {
-  return new PIXI.Point(
+  return new Point(
     Math.max(x, Math.min(x + width, x1)),
     Math.max(y, Math.min(y + height, y1))
   );
@@ -35,7 +37,7 @@ export function clamp(r, p) {
 }
 
 export function neg({x, y}) {
-  return new PIXI.Point(-x, -y);
+  return new Point(-x, -y);
 }
 
 export function floatEqual(x, y, epsilon) {
@@ -45,8 +47,8 @@ export function floatEqual(x, y, epsilon) {
 export function norm({x, y}) {
   const n = abs({x, y});
   if (floatEqual(0, n)) {
-    return new PIXI.Point(0, 0);
+    return new Point(0, 0);
   } else {
-    return new PIXI.Point(x / n, y / n);
+    return new Point(x / n, y / n);
   }
 }

@@ -1,27 +1,9 @@
-import { load, notify } from "pixi-boilerplate/utils";
-import { Layout } from "pixi-boilerplate/layout/Layout";
-import { SceneController } from "pixi-boilerplate/scenes/SceneController";
-import { Physics } from "pixi-boilerplate/physics/Physics";
+import { load, notify } from "./utils";
+import { Layout } from "./layout/Layout";
+import { SceneController } from "./scenes/SceneController";
+import { Physics } from "./physics/Physics";
 import { Inputs } from "./inputs/Inputs";
-
-/**
- * @typedef {{
- *   load?(): void,
- *   exit?(oldScene: string, params: {[key: string]: any}): void,
- *   enter?(newScene: string, params: {[key: string]: any}, oldScene: string): void
- * }} Scene
- */
-
-/**
- * @typedef {{
- *   assets: {
- *     preload: {[key: string]: string}, 
- *     load: {[key: string]: string}, 
- *     postLoad: {[key: string]: string}, 
- *   },
- *   scenes: {[key: string]: Scene}
- * }} ApplicationOptions
- */
+import { Application as PIXI_Application } from "pixi.js";
  
 export class Application {
   /**
@@ -50,7 +32,7 @@ export class Application {
     /**
      * @protected
      */
-    this.application = new PIXI.Application({
+    this.application = new PIXI_Application({
       antialias: true,
       width: window.innerWidth,
       height: window.innerHeight,
@@ -78,6 +60,8 @@ export class Application {
       storage: null,
       ticker: null
     };
+
+    this.framesElapsed = 0;
 
     document.body.appendChild(this.application.view);
   }
@@ -157,7 +141,7 @@ export class Application {
    * @protected
    */
   initPhysics() {
-    this.services.physics = new Physics(this.services);
+    this.services.physics = new Physics({services: this.services});
     this.addListener(this.services.physics);
   }
 

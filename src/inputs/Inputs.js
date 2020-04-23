@@ -1,6 +1,7 @@
 import { InputsState } from "./InputsState";
 import { KeyboardInputs } from "./KeyboardInputs";
 import { TouchInputs } from "./TouchInputs";
+import { utils } from "pixi.js";
 
 export class Inputs {
   constructor(services) {
@@ -17,7 +18,7 @@ export class Inputs {
     /**
      * @public
      */
-    this.events = new PIXI.utils.EventEmitter();
+    this.events = new utils.EventEmitter();
 
     /**
      * @protected

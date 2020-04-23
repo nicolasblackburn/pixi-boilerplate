@@ -1,4 +1,4 @@
-import { abs, mult } from "pixi-boilerplate/geom";
+import { abs, mult } from "../geom";
 import { InputsState } from "./InputsState";
 
 export class KeyboardInputs {

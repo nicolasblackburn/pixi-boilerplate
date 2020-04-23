@@ -1,6 +1,4 @@
-import * as PIXI from "pixi.js";  
-import { Application } from "./Application";
-import { Scene } from "./scenes/Scene";
+  import { Application } from "./Application";
 import { MainScene } from "./scenes/MainScene";
 
 window.app = new Application({

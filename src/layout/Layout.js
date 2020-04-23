@@ -1,16 +1,17 @@
-import { rectangleEqual, timeout } from "pixi-boilerplate/utils";
+import { rectangleEqual, timeout } from "../utils";
+import { utils, Rectangle } from "pixi.js";
 
 export class Layout {
   constructor(services) {
     /**
      * @public
      */
-    this.events = new PIXI.utils.EventEmitter();
+    this.events = new utils.EventEmitter();
 
     /**
      * @public
      */
-    this.viewport = new PIXI.Rectangle(0, 0, window.innerWidth, window.innerHeight);
+    this.viewport = new Rectangle(0, 0, window.innerWidth, window.innerHeight);
 
     /**
      * @protected

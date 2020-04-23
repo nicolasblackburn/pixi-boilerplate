@@ -1,9 +1,11 @@
+import { Point } from "pixi.js";
+
 export class InputsState {
   constructor() {
     /**
      * @public
      */
-    this.axis = new PIXI.Point(0, 0);
+    this.axis = new Point(0, 0);
 
     /**
      * @public

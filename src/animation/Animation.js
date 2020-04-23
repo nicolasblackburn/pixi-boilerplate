@@ -1,3 +1,5 @@
+import { Ticker } from "pixi.js";
+
 let ids = 0;
 
 export class SkipEvents {
@@ -56,6 +58,7 @@ export class Animation {
                     let once = false;
                     const completeOnce = () => {
                         if (!once) {
+                            started = false;
                             once = true;
                             this.pause();
                             if (!skipEvents) {
@@ -156,4 +159,4 @@ export class Animation {
  * @public
  * @static
  */
-Animation.sharedTicker = PIXI.Ticker.shared;
+Animation.sharedTicker = Ticker.shared;

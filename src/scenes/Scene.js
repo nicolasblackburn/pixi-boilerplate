@@ -1,3 +1,5 @@
+import { Container } from "pixi.js";
+
 export class Scene {
   constructor(services) {
     /**
@@ -8,7 +10,7 @@ export class Scene {
     /**
      * @public
      */
-    this.container = new PIXI.Container();
+    this.container = new Container();
   }
 
   /**
