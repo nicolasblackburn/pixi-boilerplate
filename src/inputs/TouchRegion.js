@@ -1,4 +1,4 @@
-import { utils } from "pixi.js";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 
 function inViewportRegion(point, region) {
   return region.x * window.innerWidth <= point.x &&
@@ -42,7 +42,7 @@ export class TouchRegion {
      */
     this.region = region;
 
-    const emitter = new utils.EventEmitter();
+    const emitter = new EventEmitter();
 
     let start;
     const handlers = {

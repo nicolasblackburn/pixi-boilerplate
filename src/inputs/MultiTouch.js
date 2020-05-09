@@ -1,4 +1,4 @@
-import { utils } from "pixi.js";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 
 function findClosest(touch, touches) {
   const [closest] = touches.reduce(([min, minDist], {x, y, id}) => {
@@ -18,7 +18,7 @@ function findClosest(touch, touches) {
 
 export class MultiTouch {
   constructor(interaction) {
-    const emitter = new utils.EventEmitter();
+    const emitter = new EventEmitter();
 
     let touches = [];
     const handlers = {

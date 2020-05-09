@@ -1,6 +1,6 @@
-import { MultiTouch } from "./MultiTouch";
-import { TouchRegion } from "./TouchRegion";
-import { sub, mult, abs } from "../geom";
+import { MultiTouch } from "pixi-boilerplate/inputs/MultiTouch";
+import { TouchRegion } from "pixi-boilerplate/inputs/TouchRegion";
+import { sub, mult, abs } from "pixi-boilerplate/geom";
 const { min } = Math;
 
 export class TouchInputs {

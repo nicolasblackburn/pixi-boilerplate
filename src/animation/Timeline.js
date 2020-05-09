@@ -1,4 +1,4 @@
-import {Animation, SkipEvents} from "./Animation";
+import {Animation, SkipEvents} from "pixi-boilerplate/animation/Animation";
 
 export class Timeline extends Animation {
   constructor(options = {}) {

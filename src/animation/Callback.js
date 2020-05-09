@@ -1,4 +1,4 @@
-import { Animation } from "./Animation";
+import { Animation } from "pixi-boilerplate/animation/Animation";
 
 export class Callback extends Animation {
   constructor(fn, options) {

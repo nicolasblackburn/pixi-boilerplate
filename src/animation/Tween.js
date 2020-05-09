@@ -1,4 +1,4 @@
-import {Animation} from "./Animation";
+import {Animation} from "pixi-boilerplate/animation/Animation";
 
 export class Tween extends Animation {
     constructor(target, duration, from, to) {

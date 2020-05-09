@@ -1,13 +1,14 @@
-import { Point, Rectangle } from "pixi.js";
+import { point, rectangle } from "pixi-boilerplate/geom";
 
 export class Body {
   constructor(options) {
     options = {
-      position: new Point(0, 0),
-      velocity: new Point(0, 0),
-      acceleration: new Point(0, 0),
-      bounds: new Rectangle(0, 0, 16, 16),
-      anchor: new Point(0.5, 0.5),
+      position: point(0, 0),
+      velocity: point(0, 0),
+      acceleration: point(0, 0),
+      bounds: rectangle(0, 0, 16, 16),
+      anchor: point(0.5, 0.5),
+      maxSpeed: 60,
       ...options
     };
 
@@ -35,5 +36,7 @@ export class Body {
      * @public
      */
     this.anchor = options.anchor;
+
+    this.maxSpeed = options.maxSpeed;
   }
 }

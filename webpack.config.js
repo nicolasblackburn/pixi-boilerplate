@@ -1,6 +1,4 @@
-const fs = require('fs');
 const path = require('path');
-const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
@@ -15,34 +13,8 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([{
       from: 'public', to: './'
-    }]),
-    new webpack.ProvidePlugin({
-      PIXI: "pixi.js"
-    })
+    }])
   ],
-
-  module: {
-    rules: [
-      {
-        test: /.(js|jsx)$/,
-        include: [path.resolve(__dirname, 'src')],
-        loader: 'babel-loader',
-
-        options: {
-          plugins: ['syntax-dynamic-import'],
-
-          presets: [
-            [
-              '@babel/preset-env',
-              {
-                modules: false
-              }
-            ]
-          ]
-        }
-      }
-    ]
-  },
 
   optimization: {
     splitChunks: {

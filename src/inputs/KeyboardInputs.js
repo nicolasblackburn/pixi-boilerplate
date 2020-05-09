@@ -1,5 +1,5 @@
-import { abs, mult } from "../geom";
-import { InputsState } from "./InputsState";
+import { abs, mult } from "pixi-boilerplate/geom";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
 
 export class KeyboardInputs {
   constructor({services, events, keys, state}) {

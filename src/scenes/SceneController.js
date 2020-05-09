@@ -1,4 +1,4 @@
-import { notify } from "../utils";
+import { notify } from "pixi-boilerplate/utils";
 
 export class SceneController {
   constructor({scenes, services}) {
@@ -75,6 +75,7 @@ export class SceneController {
               return Promise.resolve();
             }
           })
+          .then(() => newScene.resize(this.services.layout.viewport))
           .then(() => this.loadedScenes[newSceneName] = true);
       } else {
         return Promise.resolve();

@@ -1,8 +1,8 @@
-import { load, notify } from "./utils";
-import { Layout } from "./layout/Layout";
-import { SceneController } from "./scenes/SceneController";
-import { Physics } from "./physics/Physics";
-import { Inputs } from "./inputs/Inputs";
+import { load, notify } from "pixi-boilerplate/utils";
+import { Layout } from "pixi-boilerplate/layout/Layout";
+import { SceneController } from "pixi-boilerplate/scenes/SceneController";
+import { Physics } from "pixi-boilerplate/physics/Physics";
+import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Application as PIXI_Application } from "pixi.js";
  
 export class Application {

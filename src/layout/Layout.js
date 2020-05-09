@@ -1,17 +1,18 @@
-import { rectangleEqual, timeout } from "../utils";
-import { utils, Rectangle } from "pixi.js";
+import { timeout } from "pixi-boilerplate/utils";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
+import { rectangle, rectangleEqual } from "pixi-boilerplate/geom";
 
 export class Layout {
   constructor(services) {
     /**
      * @public
      */
-    this.events = new utils.EventEmitter();
+    this.events = new EventEmitter();
 
     /**
      * @public
      */
-    this.viewport = new Rectangle(0, 0, window.innerWidth, window.innerHeight);
+    this.viewport = rectangle(0, 0, window.innerWidth, window.innerHeight);
 
     /**
      * @protected

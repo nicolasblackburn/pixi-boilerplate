@@ -1,5 +1,5 @@
-  import { Application } from "./Application";
-import { MainScene } from "./scenes/MainScene";
+  import { Application } from "pixi-boilerplate/Application";
+import { MainScene } from "pixi-boilerplate/scenes/MainScene";
 
 window.app = new Application({
   antialias: true,

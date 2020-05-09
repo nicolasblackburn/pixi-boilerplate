@@ -1,11 +1,11 @@
-import { Point } from "pixi.js";
+import { point } from "pixi-boilerplate/geom";
 
 export class InputsState {
   constructor() {
     /**
      * @public
      */
-    this.axis = new Point(0, 0);
+    this.axis = point(0, 0);
 
     /**
      * @public

@@ -1,4 +1,4 @@
-import { StateController } from "../states/StateController";
+import { StateController } from "pixi-boilerplate/states/StateController";
 
 export class AnimationController extends StateController {
   constructor({animations}) {

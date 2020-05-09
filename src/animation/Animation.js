@@ -1,4 +1,4 @@
-import { Ticker } from "pixi.js";
+import {Ticker} from "pixi-boilerplate/animation/Ticker";
 
 let ids = 0;
 

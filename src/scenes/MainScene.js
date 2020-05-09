@@ -1,4 +1,4 @@
-import {Scene} from "./Scene";
+import {Scene} from "pixi-boilerplate/scenes/Scene";
 import { Text } from "pixi.js";
 
 export class MainScene extends Scene {

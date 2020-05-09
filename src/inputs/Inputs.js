@@ -1,7 +1,7 @@
-import { InputsState } from "./InputsState";
-import { KeyboardInputs } from "./KeyboardInputs";
-import { TouchInputs } from "./TouchInputs";
-import { utils } from "pixi.js";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
+import { KeyboardInputs } from "pixi-boilerplate/inputs/KeyboardInputs";
+import { TouchInputs } from "pixi-boilerplate/inputs/TouchInputs";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 
 export class Inputs {
   constructor(services) {
@@ -18,7 +18,7 @@ export class Inputs {
     /**
      * @public
      */
-    this.events = new utils.EventEmitter();
+    this.events = new EventEmitter();
 
     /**
      * @protected

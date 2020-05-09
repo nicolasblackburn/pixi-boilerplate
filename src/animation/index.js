@@ -1,3 +1,5 @@
+import { Animation } from "pixi-boilerplate/animation/Animation";
+
 export function lerp(from, to) {
   const t1 = typeof from;
   const t2 = typeof to;
@@ -57,4 +59,48 @@ export function bezier(p1, p2, p3, p4) {
           y: t1 * p1.y + t2 * p2.y + t3 * p3.y + t4 * p4.y
       };
   };
+}
+
+export function applyFrame(frame, sprite) {
+  for (const [k, v] of Object.entries(frame)) {
+    if (k === 'texture') {
+      sprite[k] = textureFrom(v);
+    } else if (typeof v !== 'number') {
+      applyFrame(v, sprite[k]);
+    } else {
+      sprite[k] = v;
+    }
+  }
+}
+
+export function frameAnimation(sprite, options) {
+  const {frames, frameDuration, loop,  map, duration: _, ...optionsRest} = {
+    frameDuration: 1 / 80,
+    duration: 0,
+    loop: false,
+    map: x => x,
+    ...options
+  };
+
+  let startTime;
+
+  const animation = new Animation({
+    onUpdate: (time, complete) => {
+      if (startTime === undefined) {
+        startTime = time;
+      }
+      if (time - startTime >= frames.length / frameDuration && !loop) {
+        applyFrame(map(frames[frames.length - 1]), sprite);
+        complete();
+
+      } else {
+        const frame = parseInt(time * frameDuration) % frames.length;
+        applyFrame(map(frames[frame]), sprite);
+      }
+    },
+    paused: true,
+    ...optionsRest
+  });
+
+  return animation;
 }
