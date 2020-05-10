@@ -8,7 +8,9 @@ export class Body {
       acceleration: point(0, 0),
       bounds: rectangle(0, 0, 16, 16),
       anchor: point(0.5, 0.5),
+      mass: 1,
       maxSpeed: 60,
+      onMapCollide: () => null,
       ...options
     };
 
@@ -36,7 +38,20 @@ export class Body {
      * @public
      */
     this.anchor = options.anchor;
-
+    
+    /**
+     * @public
+     */
+    this.mass = options.mass;
+    
+    /**
+     * @public
+     */
     this.maxSpeed = options.maxSpeed;
+
+    /**
+     * @public
+     */
+    this.onMapCollide = options.onMapCollide;
   }
 }

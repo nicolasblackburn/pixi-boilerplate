@@ -1,44 +1,60 @@
 import { StateController } from "pixi-boilerplate/states/StateController";
 
 export class AnimationController extends StateController {
-  constructor({animations}) {
-    super();
-
-    /**
-     * @protected
-     */
-    this.states = animations;
-
-    for (const [_, animation] of Object.entries(this.states)) {
-      animation.pause();
-    }
-  }
-
   /**
+   * @override
    * @public
    * @param {string} name 
    * @param {number} time 
    */
-  play(name, time) {
+  set(name, params) {
     const previousName = this.currentName;
-    const previousAnimation = this.states[previousName];
+    const previousState = this.states[previousName];
 
-    if (previousAnimation) {
-      previousAnimation.pause();
-    }
-    
-    const animation = this.states[name];
-    if (!animation) {
+    if (previousState) {
+      this.exitState(previousState, params);
+    } 
+
+    const state = this.states[name];
+
+    if (!state) {
       throw new Error(`State '${name}' is undefined.`);
     }
 
     this.currentName = name;
-    animation.play();
 
-    if (time !== undefined) {
-      animation.time = 0;
+    if (state.enter) {
+      state.enter(params);
     }
 
-    return animation;
+    return state;
+  }
+
+  /**
+   * @public
+   * @param {*} name 
+   * @param {*} time 
+   */
+  play(name, time) {
+    this.set(name, {time});
+    
+    this.current.play();
+
+    if (time !== undefined) {
+      this.current.time = 0;
+    }
+
+    return this.current;
+  }
+
+  /**
+   * @override
+   * @protected
+   * @param {*} state 
+   * @param {*} params 
+   */
+  exitState(state, params) {
+    state.pause();
+    super.exitState(state, params);
   }
 }

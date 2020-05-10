@@ -1,11 +1,14 @@
-import { abs, add, addmult, clampAbs, clampRect, mult, norm, point, pointCopy, pwmult, rectangle, rectanglesIntersect, sub } from "pixi-boilerplate/geom";
+import { abs, add, addmult, clampAbs, clampRect, mult, norm, point, pointsBounds, pointCopy, pointToArray, rectangle, rectanglesIntersect, sub } from "pixi-boilerplate/geom/index";
 import { Body } from "pixi-boilerplate/physics/Body";
-import { intervalsIntersect, pointsBounds, pointToArray, transformTranslate, transform } from "pixi-boilerplate/geom/index";
+
+const STATIC_FRICTION = 300;
+const STEPS_PER_SECOND = 10;
+const FPS = 60;
 
 export class Physics {
   constructor(options) {
     const {services, stepDuration} = {
-      stepDuration: 1000 / 60 / 10,
+      stepDuration: 1000 / FPS / STEPS_PER_SECOND,
       ...options
     };
 
@@ -84,7 +87,7 @@ export class Physics {
     while (this.extraMS > 0) {
       for (const body of this.bodies) {
         const previousPosition = pointCopy(body.position);
-        this.updateBody(fixedDeltaTime, body, 800);
+        this.updateBody(fixedDeltaTime, body, STATIC_FRICTION);
         this.processMapCollisions(previousPosition, body);
         body.position = clampRect(this.bounds, body.position);
       }
@@ -92,53 +95,18 @@ export class Physics {
     } 
   }
 
-  processMapCollisions(previousPosition, body) {
-    if (this.map) {
-      const displacement = sub(body.position, previousPosition);
-      let bodyRect = bodyBounds(body);
-      const previousBodyRect = rectangle(
-        ...pointToArray(addmult(-1, displacement, bodyRect)),
-        bodyRect.width,
-        bodyRect.height
-      );
-      const clipRect = pointsBounds([
-        previousBodyRect, 
-        add(point(previousBodyRect.width, previousBodyRect.height), previousBodyRect),
-        add(displacement, previousBodyRect),
-        add(displacement, point(previousBodyRect.width, previousBodyRect.height), previousBodyRect)
-      ]);
-      const tiles = mapGetSolidTilesInClip(clipRect, this.map);
-      body.position.y -= displacement.y;
-      bodyRect = bodyBounds(body);
-      for (const tile of tiles) {
-        if (rectanglesIntersect(bodyRect, tile)) {
-          body.position.x = previousPosition.x;
-          break;
-        }
-      }
-      body.position.y += displacement.y;
-      bodyRect = bodyBounds(body);
-      for (const tile of tiles) {
-        if (rectanglesIntersect(bodyRect, tile)) {
-          body.position.y = previousPosition.y;
-          break;
-        }
-      }
-    }
-  }
-
   updateBody(deltaTime, body, frictionCoef) {
     body.velocity = clampAbs(
       body.maxSpeed,
       addmult(
-        deltaTime, 
+        deltaTime * body.mass, 
         body.acceleration,
         body.velocity
       )
     );
 
     // Apply friction
-    const friction = mult(-deltaTime * frictionCoef, norm(body.velocity));
+    const friction = mult(-deltaTime * body.mass * frictionCoef, norm(body.velocity));
     if (abs(friction) < abs(body.velocity)) {
       body.velocity = add(body.velocity, friction);
     } else {
@@ -202,35 +170,41 @@ export class Physics {
       mult(constraint.start.mass / totalMass, offset)
     );
   }
-}
 
-export function bodyBounds(body) {
-  return rectangle(
-    ...pointToArray(sub(
-      body.position, 
-      body.bounds, 
-      pwmult(body.anchor, point(body.bounds.width, body.bounds.height))
-    )),
-    body.bounds.width,
-    body.bounds.height
-  );
-}
-
-export function mapGetSolidTilesInClip(clipRect, map) {
-  const tiles = [];
-  for (let tx = clipRect.x / map.tileSize.x | 0; tx < Math.ceil((clipRect.x + clipRect.width) / map.tileSize.x); tx++) {
-    for (let ty = clipRect.y / map.tileSize.y | 0; ty < Math.ceil((clipRect.y + clipRect.height) / map.tileSize.y); ty++) {
-      const tileId = map.data[tx + ty * map.tileCount.x];
-      if (map.isSolid(tileId)) {
-        const tile = rectangle(
-          tx * map.tileSize.x,
-          ty * map.tileSize.y,
-          map.tileSize.x,
-          map.tileSize.y
-        );
-        tiles.push(tile);
+  processMapCollisions(previousPosition, body) {
+    if (this.map) {
+      const displacement = sub(body.position, previousPosition);
+      let bodyRect = getBodyBounds(body);
+      const previousBodyRect = rectangle(
+        ...pointToArray(addmult(-1, displacement, bodyRect)),
+        bodyRect.width,
+        bodyRect.height
+      );
+      const clipRect = pointsBounds([
+        previousBodyRect, 
+        add(point(previousBodyRect.width, previousBodyRect.height), previousBodyRect),
+        add(displacement, previousBodyRect),
+        add(displacement, point(previousBodyRect.width, previousBodyRect.height), previousBodyRect)
+      ]);
+      const tiles = this.map.getSolidTilesInRectangle(clipRect);
+      body.position.y -= displacement.y;
+      bodyRect = getBodyBounds(body);
+      for (const tile of tiles) {
+        if (rectanglesIntersect(bodyRect, tile)) {
+          body.position.x = previousPosition.x;
+          body.onMapCollide({type: 'map', normal: {x: 0, y: 1}});
+          break;
+        }
+      }
+      body.position.y += displacement.y;
+      bodyRect = getBodyBounds(body);
+      for (const tile of tiles) {
+        if (rectanglesIntersect(bodyRect, tile)) {
+          body.position.y = previousPosition.y;
+          body.onMapCollide({type: 'map', normal: {x: 1, y: 0}});
+          break;
+        }
       }
     }
   }
-  return tiles;
 }

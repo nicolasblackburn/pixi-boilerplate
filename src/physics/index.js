@@ -1,5 +1,5 @@
 import { abs, cullInvisiblePoints, dot, mult, norm, sub } from "pixi-boilerplate/geom";
-import { add, intervalsIntersect } from "pixi-boilerplate/geom/index";
+import { add, intervalsIntersect, rectangle, pointToArray, pwmult, point } from "pixi-boilerplate/geom/index";
 
 /**
  * Check whether a moving segment seg0 and a static segment seg1 collide.
@@ -141,4 +141,16 @@ export function findCollisionNormal(seg0, seg1) {
   const n = abs(p);
   const {x, y} = mult(1 / n, p);
   return {x: y, y: -x};
+}
+
+export function getBodyBounds(body) {
+  return rectangle(
+    ...pointToArray(sub(
+      body.position, 
+      body.bounds, 
+      pwmult(body.anchor, point(body.bounds.width, body.bounds.height))
+    )),
+    body.bounds.width,
+    body.bounds.height
+  );
 }

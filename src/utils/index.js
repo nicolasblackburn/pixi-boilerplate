@@ -85,3 +85,15 @@ export function textureFrom(id) {
     return Texture.from(id);
   }
 }
+
+const { PI, atan2 } = Math;
+const PI2 = 2 * PI;
+export const DIRECTION_KEYWORD_MAP = ['right', 'down', 'down', 'down', 'left', 'up', 'up', 'up'];
+
+export function discreteAngle(samplesCount, {x, y}) {
+  return ((atan2(y, x) / PI2 * samplesCount + samplesCount + 1 / 2) % samplesCount | 0);
+}
+
+export function getDirectionKeyword(direction) {
+  return DIRECTION_KEYWORD_MAP[discreteAngle(8, direction)];
+}
