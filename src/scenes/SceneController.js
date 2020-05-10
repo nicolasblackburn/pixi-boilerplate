@@ -70,7 +70,7 @@ export class SceneController {
         return Promise.resolve()
           .then(() => {
             if (typeof newScene.load === "function") {
-              return newScene.load();
+              return newScene.load(params);
             } else {
               return Promise.resolve();
             }

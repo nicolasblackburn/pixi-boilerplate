@@ -31,6 +31,11 @@ export function rectangle(x, y, width, height) {
   return {x, y, width, height};
 }
 
+export function rectangleCopy(rect) {
+  const {x, y, width, height} = rect;
+  return rectangle(x, y, width, height);
+}
+
 export function rectangleToPoints(rect) {
   const {x, y, width, height} = rect;
   return [{x, y}, {x: x + width, y}, {x: x + width, y: y + height}, {x, y: y + height}];
@@ -155,6 +160,17 @@ export function box({x, y, width, height}, {x: x1, y: y1}) {
     Math.max(x, Math.min(x + width, x1)),
     Math.max(y, Math.min(y + height, y1))
   );
+}
+
+export function getBounds(rects) {
+  const bounds = rectangle(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 0, 0);
+  for (const {x, y, width, height} of rects) {
+    bounds.x = Math.min(bounds.x, x);
+    bounds.y = Math.min(bounds.y, y);
+    bounds.width = Math.max(bounds.width, x + width - bounds.x);
+    bounds.height = Math.max(bounds.height, y + height - bounds.y);
+  }
+  return bounds;
 }
 
 export function pointsBounds(points) {

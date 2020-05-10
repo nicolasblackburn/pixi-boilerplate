@@ -1,5 +1,17 @@
 import { Texture } from "pixi.js";
 
+export function queryString() {
+  return window.location.search.slice(1).split("&").reduce((qs, kv) => {
+    const [k, v] = decodeURIComponent(kv).split("=");
+    if (v === undefined) {
+      qs[k] = k;
+    } else {
+      qs[k] = v;
+    }
+    return qs;
+  }, {});
+}
+
 /**
 * 
 * @param {Loader} loader 
@@ -96,4 +108,26 @@ export function discreteAngle(samplesCount, {x, y}) {
 
 export function getDirectionKeyword(direction) {
   return DIRECTION_KEYWORD_MAP[discreteAngle(8, direction)];
+}
+
+const TEXT_DATA = {}; 
+let LOCALE = 'en';
+
+export function setLocale(locale) {
+  LOCALE = locale;
+}
+
+export function setTextData(data) {
+  if (TEXT_DATA[LOCALE] === undefined) {
+    TEXT_DATA[LOCALE] = {};
+  }
+  Object.assign(TEXT_DATA[LOCALE], data);
+}
+
+export function getText(text) {
+  if (TEXT_DATA[LOCALE] !== undefined && TEXT_DATA[LOCALE][text] !== undefined) {
+    return TEXT_DATA[LOCALE][text];
+  } else {
+    return text;
+  }
 }

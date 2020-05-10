@@ -4,6 +4,7 @@ import { Body } from "pixi-boilerplate/physics/Body";
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
+const MAX_SKIP_STEPS = 5;
 
 export class Physics {
   constructor(options) {
@@ -84,7 +85,8 @@ export class Physics {
   update(deltaTime) {
     this.extraMS += deltaTime;
     const fixedDeltaTime = this.stepDuration / 1000;
-    while (this.extraMS > 0) {
+    let steps = 0;
+    while (this.extraMS > 0 && steps < MAX_SKIP_STEPS + STEPS_PER_SECOND) {
       for (const body of this.bodies) {
         const previousPosition = pointCopy(body.position);
         this.updateBody(fixedDeltaTime, body, STATIC_FRICTION);
@@ -92,7 +94,11 @@ export class Physics {
         body.position = clampRect(this.bounds, body.position);
       }
       this.extraMS -= this.stepDuration;
+      steps++;
     } 
+    if (steps >= MAX_SKIP_STEPS + STEPS_PER_SECOND) {
+      this.extraMS = 0;
+    }
   }
 
   updateBody(deltaTime, body, frictionCoef) {
