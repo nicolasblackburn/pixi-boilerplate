@@ -4,7 +4,9 @@ import { resizeInto } from "pixi-boilerplate/layout";
 import { notify } from "pixi-boilerplate/utils";
 
 export class Scene {
-  constructor(services) {
+  constructor(options) {
+    const {services} = options;
+    
     /**
      * @protected
      */

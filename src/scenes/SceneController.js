@@ -111,7 +111,7 @@ export class SceneController {
   initScenes() {
     for (const [key, value] of Object.entries(this.scenes)) {
       if (typeof value === "function") {
-        this.scenes[key] = value(this.services);
+        this.scenes[key] = value({services: this.services});
         this.scenes[key].name = key;
       }
     } 
