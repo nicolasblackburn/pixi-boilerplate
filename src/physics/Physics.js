@@ -91,7 +91,7 @@ export class Physics {
         const previousPosition = pointCopy(body.position);
         this.updateBody(fixedDeltaTime, body, STATIC_FRICTION);
         this.processMapCollisions(previousPosition, body);
-        body.position = clampRect(this.bounds, body.position);
+        body.transform.translate = mult(-1, this.map.position);
       }
       this.extraMS -= this.stepDuration;
       steps++;
@@ -122,12 +122,11 @@ export class Physics {
     body.position = addmult(
       deltaTime, 
       body.velocity,
-      body.position
+      body.position,
     );
   }
 
   updateVerletBody(deltaTime, body) {
-
     body.velocity = addmult(deltaTime, body.acceleration, body.velocity);
     body.position = addmult(deltaTime, body.velocity, body.position);
   }

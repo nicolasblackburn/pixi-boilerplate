@@ -32,6 +32,15 @@ export class Body {
     /**
      * @public
      */
+    this.transform = {
+      translate: point(0, 0),
+      scale: point(0, 0),
+      rotate: 0
+    }
+
+    /**
+     * @public
+     */
     this.bounds = options.bounds;
 
     /**
