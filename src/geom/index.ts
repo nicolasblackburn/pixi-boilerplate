@@ -17,7 +17,7 @@ export function pointsToSegments(pts: Point[]) {
 
 export function pointCopy(p: Point, q?: Point) {
   if (q === undefined) {
-    return {x: p.x, y: p.y};
+    return createPoint(p.x, p.y);
   } else {
     q.x = p.x;
     q.y = p.y;
@@ -26,22 +26,27 @@ export function pointCopy(p: Point, q?: Point) {
 }
 
 export function pointToArray(p: Point) {
-  const {x, y} = p;
-  return [x, y];
+  return [p.x, p.y];
 }
 
 export function createRectangle(x: number, y: number, width: number, height: number) {
   return {x, y, width, height};
 }
 
-export function rectangleCopy(rect: Rectangle) {
-  const {x, y, width, height} = rect;
-  return createRectangle(x, y, width, height);
+export function rectangleCopy(rect0: Rectangle, rect1?: Rectangle) {
+  if (rect1 === undefined) {
+    return createRectangle(rect0.x, rect0.y, rect0.width, rect0.height);
+  } else {
+    rect1.x = rect0.x;
+    rect1.y = rect0.y;
+    rect1.width = rect0.width;
+    rect1.height = rect0.height;
+    return rect1;
+  }
 }
 
 export function rectangleToPoints(rect: Rectangle) {
-  const {x, y, width, height} = rect;
-  return [{x, y}, {x: x + width, y}, {x: x + width, y: y + height}, {x, y: y + height}];
+  return [createPoint(rect.x, rect.y), createPoint(rect.x + rect.width, rect.y), createPoint(rect.x + rect.width, rect.y + rect.height), createPoint(rect.x, rect.y + rect.height)];
 }
 
 /**
@@ -61,41 +66,41 @@ export function add(...points: Point[]) {
     return createPoint(0, 0);
   } else {
     const p = createPoint(0, 0);
-    for (const {x, y} of points) {
-      p.x += x;
-      p.y += y;
+    for (const q of points) {
+      p.x += q.x;
+      p.y += q.y;
     }
     return p;
   }
 }
 
-export function sub({x, y}: Point, ...points: Point[]) {
+export function sub(p: Point, ...points: Point[]) {
   if (points.length === 0) {
     return createPoint(0, 0);
   } else {
-    const p = createPoint(x, y);
-    for (const {x, y} of points) {
-      p.x -= x;
-      p.y -= y;
+    const q = createPoint(p.x, p.y);
+    for (const r of points) {
+      q.x -= r.x;
+      q.y -= r.y;
     }
-    return p;
+    return q;
   }
 }
 
-export function pwmult({x: x0, y: y0}: Point, {x: x1, y: y1}: Point) {
-  return createPoint(x0 * x1, y0 * y1);
+export function pwmult(p0: Point, p1: Point) {
+  return createPoint(p0.x * p1.x, p0.y * p1.y);
 }
 
-export function mult(a: number, {x, y}: Point) {
-  return createPoint(a * x, a * y);
+export function mult(a: number, p: Point) {
+  return createPoint(a * p.x, a * p.y);
 }
 
 export function addmult(a: number, u: Point, ...vs: Point[]) {
   return add(mult(a, u), ...vs);
 }
 
-export function abs({x, y}: Point) {
-  return Math.sqrt(x * x + y * y);
+export function abs(p: Point) {
+  return Math.sqrt(p.x * p.x + p.y * p.y);
 }
 
 export function transform(matrix: Matrix, p: Point) {
@@ -113,10 +118,11 @@ export function transformIdentity() {
 }
 
 export function transformRotation(angle: number) {
-  const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
+  const a = Math.cos(angle);
+  const b = Math.sin(angle);
   return [
-    cos, -sin, 0,
-    sin, cos, 0
+    a, -b, 0,
+    b, a, 0
   ];
 }
 
@@ -150,16 +156,15 @@ export function transformDet(matrix: Matrix) {
 }
 
 export function transformInv(matrix: Matrix) {
-  const [a, b, c, d, e, f] = matrix;
   const det = transformDet(matrix);
   return [
-    e / det, -b / det, (b * f - c * e) / det,
-    -d / det, a / det, (c * d - a * f) / det
+    matrix[4] / det, -matrix[1] / det, (matrix[1] * matrix[5] - matrix[2] * matrix[4]) / det,
+    -matrix[3] / det, matrix[0] / det, (matrix[2] * matrix[3] - matrix[0] * matrix[5]) / det
   ];
 }
 
-export function dot({x: x1, y: y1}: Point, {x: x2, y: y2}: Point) {
-  return x1 * x2 + y1 * y2;
+export function dot(p0: Point, p1: Point) {
+  return p0.x * p1.x + p0.y * p1.y;
 }
 
 export function proj(u: Point, v: Point) {
@@ -171,31 +176,31 @@ export function proj(u: Point, v: Point) {
   }
 }
 
-export function box({x, y, width, height}: Rectangle, {x: x1, y: y1}: Point) {
+export function box(rect: Rectangle, point: Point) {
   return createPoint(
-    Math.max(x, Math.min(x + width, x1)),
-    Math.max(y, Math.min(y + height, y1))
+    Math.max(rect.x, Math.min(rect.x + rect.width, point.x)),
+    Math.max(rect.y, Math.min(rect.y + rect.height, point.y))
   );
 }
 
 export function getBounds(rects: Rectangle[]) {
   const bounds = createRectangle(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 0, 0);
-  for (const {x, y, width, height} of rects) {
-    bounds.x = Math.min(bounds.x, x);
-    bounds.y = Math.min(bounds.y, y);
-    bounds.width = Math.max(bounds.width, x + width - bounds.x);
-    bounds.height = Math.max(bounds.height, y + height - bounds.y);
+  for (const rect of rects) {
+    bounds.x = Math.min(bounds.x, rect.x);
+    bounds.y = Math.min(bounds.y, rect.y);
+    bounds.width = Math.max(bounds.width, rect.x + rect.width - bounds.x);
+    bounds.height = Math.max(bounds.height, rect.y + rect.height - bounds.y);
   }
   return bounds;
 }
 
 export function pointsBounds(points: Point[]) {
   const bounds = createRectangle(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 0, 0);
-  for (const {x, y} of points) {
-    bounds.x = Math.min(bounds.x, x);
-    bounds.y = Math.min(bounds.y, y);
-    bounds.width = Math.max(bounds.width, x - bounds.x);
-    bounds.height = Math.max(bounds.height, y - bounds.y);
+  for (const point of points) {
+    bounds.x = Math.min(bounds.x, point.x);
+    bounds.y = Math.min(bounds.y, point.y);
+    bounds.width = Math.max(bounds.width, point.x - bounds.x);
+    bounds.height = Math.max(bounds.height, point.y - bounds.y);
   }
   return bounds;
 }
@@ -216,8 +221,8 @@ export function clampRect(rect: Rectangle, p: Point) {
   );
 }
 
-export function neg({x, y}: Point) {
-  return createPoint(-x, -y);
+export function neg(point: Point) {
+  return createPoint(-point.x, -point.y);
 }
 
 export function floatEqual(x: number, y: number, epsilon: number = 0.0000001) {
@@ -225,18 +230,16 @@ export function floatEqual(x: number, y: number, epsilon: number = 0.0000001) {
 }
 
 export function norm(p: Point) {
-  const {x, y} = p;
   const n = abs(p);
   if (floatEqual(0, n)) {
     return createPoint(0, 0);
   } else {
-    return createPoint(x / n, y / n);
+    return createPoint(p.x / n, p.y / n);
   }
 }
 
 export function ortho(p: Point) {
-  const {x, y} = p;
-  return {x: y, y: -x};
+  return {x: p.y, y: -p.x};
 }
 
 export function orthonorm(p: Point) {
@@ -244,13 +247,12 @@ export function orthonorm(p: Point) {
 }
 
 export function findSupport(dir: Point, pts: Point[]) {
-  const {x, y} = dir;
   let i = 0;
-  let maxDist = pts[i].x * x + pts[i].y * y; 
+  let maxDist = pts[i].x * dir.x + pts[i].y * dir.y; 
   let maxDistIndex = i;
   while (i < pts.length - 1) {
     i++;
-    const dist = pts[i].x * x + pts[i].y * y; 
+    const dist = pts[i].x * dir.x + pts[i].y * dir.y; 
     if (dist > maxDist) {
       maxDist = dist;
       maxDistIndex = i;
@@ -259,16 +261,17 @@ export function findSupport(dir: Point, pts: Point[]) {
   return [pts[maxDistIndex], maxDistIndex, maxDist] as [Point, number, number];
 }
 
-function absCross({x: x0, y: y0}: Point, {x: x1, y: y1}: Point) {
-  return x0 * y1 - x1 * y0;
+function absCross(p0: Point, p1: Point) {
+  return p0.x * p1.y - p1.x * p0.y;
 }
 
 export function cullInvisiblePoints(dir: Point, pts: Point[]) {
-  const [sp, spi] = findSupport(dir, pts);
-  let [p, i] = [sp, spi];
-  const visible = [p];
-  const visibleIndexes = [i];
+  const [support, supportIndex] = findSupport(dir, pts);
+  const visible = [support];
+  const visibleIndexes = [supportIndex];
 
+  let p = support;
+  let i = supportIndex;
   const start = i;
   const m = pts.length;
 
@@ -287,7 +290,7 @@ export function cullInvisiblePoints(dir: Point, pts: Point[]) {
     visibleIndexes.unshift(i);
   }
 
-  return [visible, visibleIndexes, sp, spi] as [Point[], number[], Point, number];
+  return [visible, visibleIndexes, support, supportIndex] as [Point[], number[], Point, number];
 }
 
 /**
@@ -297,26 +300,25 @@ export function cullInvisiblePoints(dir: Point, pts: Point[]) {
  * @param edgesCount 
  */
 export function regularPoints(origin: Point, radius: number, edgesCount: number) {
-  const {x, y} = origin;
   const points = [];
   for (let i = 0; i < edgesCount; i++) {
     const a = i / edgesCount * 2 * Math.PI;
-    points.push({x: x + radius * Math.cos(a), y: y + radius * Math.sin(a)});
+    points.push(createPoint(origin.x + radius * Math.cos(a), origin.y + radius * Math.sin(a)));
   }
   return points;
 }
 
 export function randomUnitVector() {
-  return (a => ({x: Math.cos(a), y: Math.sin(a)}))(Math.random() * 2 * Math.PI);
+  return (a => createPoint(Math.cos(a), Math.sin(a)))(Math.random() * 2 * Math.PI);
 }
 
 export function rectanglesIntersect(
-  {x: x1, y: y1, width: w1, height: h1}: Rectangle,
-  {x: x2, y: y2, width: w2, height: h2}: Rectangle
+  rect0: Rectangle,
+  rect1: Rectangle
 ) {
-  if (x1 >= x2 + w2 || x2 >= x1 + w1) {
+  if (rect0.x >= rect1.x + rect1.width || rect1.x >= rect0.x + rect0.width) {
     return false; 
-  } else if (y1 >= y2 + h2 || y2 >= y1 + h1) {
+  } else if (rect0.y >= rect1.y + rect1.height || rect1.y >= rect0.y + rect0.height) {
     return false; 
   } else {
     return true; 
