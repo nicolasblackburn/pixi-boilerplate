@@ -1,15 +1,16 @@
-import { InputsState } from "./InputsState";
-import { KeyboardInputs } from "./KeyboardInputs";
-import { TouchInputs } from "./TouchInputs";
-import {EventEmitter} from "../events/EventEmitter";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
+import { KeyboardInputs } from "pixi-boilerplate/inputs/KeyboardInputs";
+import { TouchInputs } from "pixi-boilerplate/inputs/TouchInputs";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 
 export class Inputs {
-  public state;
-  public events;
+  public state: InputsState;
+  public events: EventEmitter;
 
-  protected keyboardInputs;
-  protected services;
-  protected touchInputs;
+  protected keyboardInputs: KeyboardInputs;
+  protected services: ApplicationServices;
+  protected touchInputs: TouchInputs;
 
   constructor(services) {
     /**

@@ -1,7 +1,7 @@
-import { createPoint, pointCopy, rectangle, rectangleToPoints, addmult, dot, add, mult } from "../../geom";
-import { Verlet } from "./Verlet";
-import { DistanceConstraint } from "./DistanceConstraint";
-import { AngleConstraint } from "./AngleConstraint";
+import { createPoint, pointCopy, createRectangle, add, mult } from "pixi-boilerplate/geom";
+import { Verlet } from "pixi-boilerplate/physics/verlet/Verlet";
+import { DistanceConstraint } from "pixi-boilerplate/physics/verlet/DistanceConstraint";
+import { AngleConstraint } from "pixi-boilerplate/physics/verlet/AngleConstraint";
 
 export class VerletBody {
   public position;
@@ -26,12 +26,12 @@ export class VerletBody {
     };
 
     if  (!options.points && !options.bounds) {
-      options.bounds = rectangle(0, 0, 16, 16);
-      options.points = rectangleToPoints(addmult(-1, dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds));
+      options.bounds = createRectangle(0, 0, 16, 16);
+      //options.points = rectangleToPoints(mult(-dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds));
     } else if (!options.points) {
-      options.points = rectangleToPoints(addmult(-1, dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds));
+      //options.points = rectangleToPoints(mult(-dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds));
     } else if (!options.bounds) {
-      options.bounds = add(dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds);
+      //options.bounds = add(dot(options.anchor, createPoint(options.bounds.width, options.bounds.height)), options.bounds);
     }
 
     /**

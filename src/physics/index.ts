@@ -1,4 +1,5 @@
-import { abs, add, cullInvisiblePoints, dot, mult, norm, createPoint, pwmult, rectangle, sub, segmentsIntersect } from "../geom";
+import { abs, add, cullInvisiblePoints, dot, mult, norm, createPoint, pwmult, createRectangle, sub, segmentsIntersect, Point, Segment } from "../geom";
+import { Body } from "./Body";
 
 /**
  * Check whether a moving segment seg0 and a static segment seg1 collide.
@@ -7,7 +8,7 @@ import { abs, add, cullInvisiblePoints, dot, mult, norm, createPoint, pwmult, re
  * @param {Segment} seg1 
  * @returns {[] | [number, number]} If there are no collision, an empty array is returned otherwise a pair of numbers containing the time at which the collision started at index 0 and the time at which the collision ended at index 1.
  */
-export function segmentsCollide(v, seg0, seg1) {
+export function segmentsCollide(v: Point, seg0: Segment, seg1: Segment) {
   const p_0 = seg0[0];
   const q_0 = seg1[0];
   const p_t = sub(seg0[1], seg0[0]);
@@ -94,28 +95,28 @@ export function segmentsCollide(v, seg0, seg1) {
   }
 }
 
-function* pointsIterateSegments(points) {
+function* pointsIterateSegments(points: Point[]) {
   for (let i = 0; i < points.length - 1; i++) {
-    yield [points[i], points[i + 1]];
+    yield [points[i], points[i + 1]] as Segment;
   }
 }
 
 /**
  * Checks wheter a moving polygon poly0 and a static polygon poly1 are colliding.
- * @param {Point} disp 
+ * @param {Point} displacement 
  * @param {Point[]} poly_0 
  * @param {Point[]} poly_1 
  * @returns {{t: number, p: Point, s: Segment}}
  */
-export function convexPolygonsCollide(disp, poly_0, poly_1) {
-  const [visi_0] = cullInvisiblePoints(disp, poly_0);
-  const [visi_1] = cullInvisiblePoints(mult(-1, disp), poly_1);
+export function convexPolygonsCollide(displacement: Point, poly_0: Point[], poly_1: Point[]) {
+  const [visi_0] = cullInvisiblePoints(displacement, poly_0);
+  const [visi_1] = cullInvisiblePoints(mult(-1, displacement), poly_1);
 
   let collision;
 
-  for (const [visi_a, visi_b] of [[visi_0, visi_1], visi_1, visi_0]) {
+  for (const [visi_a, visi_b] of [[visi_0, visi_1], [visi_1, visi_0]]) {
     for (const p of visi_a) {
-      const seg_0 = [p, add(disp, p)];
+      const seg_0 = [p, add(displacement, p)] as Segment;
       for (const seg_1 of pointsIterateSegments(visi_b)) {
         const [intersect, _t, _, D] = segmentsIntersect(seg_0, seg_1);
         if (intersect) {
@@ -135,20 +136,20 @@ export function convexPolygonsCollide(disp, poly_0, poly_1) {
   return collision;
 }
 
-export function findCollisionNormal(seg0, seg1) {
+export function findCollisionNormal(seg0: Segment, seg1: Segment) {
   const p = sub(seg1[1], seg1[0]);
   const n = abs(p);
   const {x, y} = mult(1 / n, p);
   return {x: y, y: -x};
 }
 
-export function getBodyBounds(body) {
+export function getBodyBounds(body: Body) {
   const {x, y} = sub(
     body.position, 
     body.bounds, 
     pwmult(body.anchor, createPoint(body.bounds.width, body.bounds.height))
   );
-  return rectangle(
+  return createRectangle(
     x,
     y,
     body.bounds.width,

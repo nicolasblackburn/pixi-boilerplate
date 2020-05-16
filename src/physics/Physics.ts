@@ -1,5 +1,7 @@
-import { abs, add, addmult, clampAbs, mult, norm, createPoint, pointsBounds, pointCopy, rectangle, rectanglesIntersect, sub } from "../geom";
-import { getBodyBounds } from ".";
+import { abs, add, addmult, clampAbs, mult, norm, createPoint, pointsBounds, pointCopy, createRectangle, rectanglesIntersect, sub, Rectangle, Point } from "pixi-boilerplate/geom";
+import { getBodyBounds } from "pixi-boilerplate/physics";
+import { Body } from "pixi-boilerplate/physics/Body";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
@@ -7,12 +9,12 @@ const FPS = 60;
 const MAX_SKIP_STEPS = 5;
 
 export class Physics {
-  protected services;
-  protected bodies;
-  protected map;
-  protected bounds;
-  protected extraMS;
-  protected stepDuration;
+  protected services: ApplicationServices;
+  protected bodies: Body[];
+  protected map: any;
+  protected bounds: Rectangle;
+  protected extraMS: number;
+  protected stepDuration: number;
 
   constructor(options) {
     const {services, stepDuration}: any = {
@@ -22,74 +24,46 @@ export class Physics {
 
     const {renderer} = services;
 
-    /**
-     * @protected
-     */
     this.services = services;
-
-    /**
-     * @protected
-     */
     this.bodies = [];
-
-    /**
-     * @protected
-     */
-    this.map;
-
-    /**
-     * @protected
-     */
-    this.bounds = rectangle(0, 0, renderer.width, renderer.height);
-
-    /**
-     * @protected
-     */
+    this.bounds = createRectangle(0, 0, renderer.width, renderer.height);
     this.extraMS = 0;
-
-    /**
-     * @protected
-     */
     this.stepDuration = stepDuration;
   }
 
   /**
-   * @public
    * @param {Rectangle} bounds 
    */
-  setBounds(bounds) {
+  public setBounds(bounds: Rectangle) {
     this.bounds = bounds;
   }
   
-  setMap(map) {
+  public setMap(map: any) {
     this.map = map;
     this.setBounds(this.map.viewport);
   }
 
   /**
-   * @public
    * @param {Body} body 
    * @param {number} priority 
    */
-  addBody(body, priority) {
+  public addBody(body: Body, priority?: number) {
     if (!this.bodies.includes(body)) {
-      this.bodies.splice(priority ? priority : 0, 0, body);
+      this.bodies.splice(priority !== undefined ? priority : this.bodies.length - 1, 0, body);
     }
   }
 
   /**
-   * @public
    * @param {Body} body 
    */
-  removeBody(body) {
+  public removeBody(body: Body) {
     this.bodies = this.bodies.filter(bodyB => bodyB !== body);
   }
 
   /**
-   * @public
    * @param {number} deltaTime 
    */
-  update(deltaTime) {
+  public update(deltaTime: number) {
     this.extraMS += deltaTime;
     const fixedDeltaTime = this.stepDuration / 1000;
     let steps = 0;
@@ -108,7 +82,7 @@ export class Physics {
     }
   }
 
-  updateBody(deltaTime, body, frictionCoef) {
+  protected updateBody(deltaTime: number, body: Body, frictionCoef: number) {
     body.velocity = clampAbs(
       body.maxSpeed,
       addmult(
@@ -138,57 +112,12 @@ export class Physics {
     body.position = addmult(deltaTime, body.velocity, body.position);
   }
 
-  updateVerlet(deltaTime, verlet) {
-    const previousPosition = pointCopy(verlet.position);
-    verlet.position = (
-      addmult(
-        deltaTime * deltaTime, 
-        verlet.acceleration,
-        sub(verlet.position, previousPosition),
-        verlet.position
-      )
-    );
-    verlet.previousPosition = previousPosition;
-  } 
-
-  updateAngleConstraint(constraint) {
-    constraint.end.position = add(
-      constraint.end.position,
-      mult(
-        constraint.stiffness,
-        addmult(
-          -1,
-          constraint.end.position,
-          constraint.start.position,
-          constraint.delta
-        )
-      )
-    );
-  }
-
-  updateDistanceConstraint(constraint) {
-    const difference = sub(constraint.end.position, constraint.start.position);
-    const offset = mult(constraint.stiffness * (constraint.distance / abs(difference) - 1), difference);
-
-    const totalMass = constraint.start.mass + constraint.end.mass;
-
-    constraint.start.position = add(
-      constraint.start.position,
-      mult(-constraint.end.mass / totalMass, offset)
-    );
-
-    constraint.end.position = add(
-      constraint.end.position,
-      mult(constraint.start.mass / totalMass, offset)
-    );
-  }
-
-  processMapCollisions(previousPosition, body) {
+  protected processMapCollisions(previousPosition: Point, body: Body) {
     if (this.map) {
       const displacement = sub(body.position, previousPosition);
       let bodyRect = getBodyBounds(body);
       const {x, y} = addmult(-1, displacement, bodyRect);
-      const previousBodyRect = rectangle(
+      const previousBodyRect = createRectangle(
         x,
         y,
         bodyRect.width,

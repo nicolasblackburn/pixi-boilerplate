@@ -1,5 +1,5 @@
-import {Animation} from "./Animation";
-import { olerp } from ".";
+import {Animation} from "pixi-boilerplate/animation/Animation";
+import { olerp } from "pixi-boilerplate/animation";
 
 export class Tween extends Animation {
     constructor(target, duration, from, to) {

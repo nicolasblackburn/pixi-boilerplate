@@ -1,9 +1,9 @@
-import { createPoint } from "../geom";
+import { createPoint, Point } from "pixi-boilerplate/geom";
 
 export class InputsState {
-  public axis;
-  public button0;
-  public button1;
+  public axis: Point;
+  public button0: {pressed: boolean};
+  public button1: {pressed: boolean};
   
   constructor() {
     /**

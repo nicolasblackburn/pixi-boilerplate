@@ -1,13 +1,13 @@
-function hasUpdate(o: any): o is {update(deltaTime: number): void} {
-  return !!o.update;
+export function hasUpdate(o: any): o is {update(deltaTime: number): any} {
+  return o.update !== undefined;
 }
 
-export function hasEnter(o: any): o is {enter(params: any): void} {
-  return !!o.enter;
+export function hasEnter(o: any): o is {enter(...params: any[]): any} {
+  return o.enter !== undefined;
 }
 
-function hasExit(o: any): o is {exit(params: any): void} {
-  return !!o.exit;
+export function hasExit(o: any): o is {exit(...params: any[]): any} {
+  return o.exit !== undefined;
 }
 
 export class StateController<S = any> {
@@ -60,7 +60,7 @@ export class StateController<S = any> {
    * @param {string} name 
    * @param {any} params 
    */
-  public set(name: string, params: any) {
+  public set(name: string, params?: any) {
     const previousName = this.currentName;
     const previousState = this.states[previousName];
 
@@ -94,7 +94,7 @@ export class StateController<S = any> {
    * @param {*} state 
    * @param {*} params 
    */
-  protected exitState(state: S, params: any) {
+  protected exitState(state: S, params?: any) {
     if (hasExit(state)) {
       state.exit(params);
     }

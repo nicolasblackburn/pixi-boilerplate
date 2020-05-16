@@ -1,4 +1,4 @@
-import {Animation} from "./Animation";
+import {Animation} from "pixi-boilerplate/animation/Animation";
 
 export class Timeline extends Animation {
   protected state;

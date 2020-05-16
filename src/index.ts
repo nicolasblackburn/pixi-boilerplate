@@ -1,4 +1,4 @@
-  import { Application } from "pixi-boilerplate/Application";
+  import { Application } from "pixi-boilerplate/application/Application";
 import { MainScene } from "pixi-boilerplate/scenes/MainScene";
 
 const app = new Application({
@@ -15,7 +15,7 @@ const app = new Application({
     main: app => new MainScene(app)
   },
   onLoad: () => {
-    return app.services.playScene("main");
+    return app.services.scenes.play("main");
   }
 });
 

@@ -1,4 +1,4 @@
-import { addmult, createPoint, pointCopy, sub } from "../../geom";
+import { addmult, createPoint, pointCopy, sub } from "pixi-boilerplate/geom";
 
 export class Verlet {
   public acceleration;

@@ -1,4 +1,4 @@
-import {EventEmitter} from "../events/EventEmitter";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 
 function findClosest(touch, touches) {
   const [closest] = touches.reduce(([min, minDist], {x, y, id}) => {

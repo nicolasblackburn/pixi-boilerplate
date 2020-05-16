@@ -1,13 +1,21 @@
-import { notify } from "../utils";
+import { notify } from "pixi-boilerplate/utils";
+import { Scene } from "pixi-boilerplate/scenes/Scene";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
+import { hasExit, hasEnter } from "pixi-boilerplate/states/StateController";
+import { Rectangle } from "pixi-boilerplate/geom";
+
+export function hasLoad(o: any): o is {load(...args: any[]): any} {
+  return o.load !== undefined;
+}
 
 export class SceneController {
-  protected activeScenes;
-  protected services;
-  protected scenes;
-  protected loadedScenes;
-  protected currentSceneName;
+  protected activeScenes: Scene[];
+  protected services: ApplicationServices;
+  protected scenes: {[k: string]: Scene};
+  protected loadedScenes: {[k: string]: boolean};
+  protected currentSceneName: string;
 
-  constructor({scenes, services}) {
+  constructor({scenes, services}: {scenes: {[k: string]: Scene}, services: ApplicationServices}) {
     /**
      * protected
      */
@@ -39,7 +47,7 @@ export class SceneController {
   /**
    * @public
    */
-  get current() {
+  public get current() {
     return this.scenes[this.currentSceneName];
   }
 
@@ -47,7 +55,7 @@ export class SceneController {
    * @public
    * @param {string} sceneName 
    */
-  get(sceneName) {
+  public get(sceneName: string) {
     return this.scenes[sceneName];
   }
 
@@ -55,7 +63,7 @@ export class SceneController {
    * @param {string} newSceneName 
    * @param {[key: string]: any} params 
    */
-  play(newSceneName, params) {
+  public play(newSceneName: string, params?: any) {
     const newScene = this.scenes[newSceneName];
     if (!newScene) {
       return Promise.reject(new Error(`Scene '${newSceneName}' is undefined.`));
@@ -75,7 +83,7 @@ export class SceneController {
       if (!this.loadedScenes[newSceneName]) {
         return Promise.resolve()
           .then(() => {
-            if (typeof newScene.load === "function") {
+            if (hasLoad(newScene)) {
               return newScene.load(params);
             } else {
               return Promise.resolve();
@@ -89,7 +97,7 @@ export class SceneController {
     })
     .then(() => {
       this.addActiveScene(newScene);
-      if (this.current && typeof this.current.exit === "function") {
+      if (this.current && hasExit(this.current)) {
         return this.current.exit(newScene, params);
       } else {
         return Promise.resolve();
@@ -97,7 +105,7 @@ export class SceneController {
     })
     .then(() => {
       this.currentSceneName = newSceneName;
-      if (this.current && typeof this.current.enter === "function") {
+      if (this.current && hasEnter(this.current)) {
         return this.current.enter(newScene, params, previousScene);
       } else {
         return Promise.resolve();
@@ -111,54 +119,42 @@ export class SceneController {
     })
   }
 
-  /**
-   * @protected
-   */
-  initScenes() {
+  protected initScenes() {
     for (const [key, value] of Object.entries(this.scenes)) {
-      if (typeof value === "function") {
-        this.scenes[key] = value({services: this.services});
+      if (typeof (value as any) === "function") {
+        this.scenes[key] = (value as any)({services: this.services});
         this.scenes[key].name = key;
       }
     } 
   }
 
   /**
-   * @public
    * @param {number} deltaTime
    */
-  update(deltaTime) {
+  public update(deltaTime: number) {
     this.notify('update', deltaTime);
   }
 
   /**
-   * @public
    * @param {Rectangle} viewport 
    */
-  resize(viewport) {
+  public resize(viewport: Rectangle) {
     this.notify('resize', viewport);
   }
 
-  /**
-   * @public
-   */
-  addActiveScene(scene) {
+  public addActiveScene(scene: Scene) {
     this.activeScenes.push(scene);
   }
 
-  /**
-   * @public
-   */
-  removeActiveScene(sceneA) {
+  public removeActiveScene(sceneA: Scene) {
     this.activeScenes = this.activeScenes.filter(sceneB => sceneA !== sceneB);
   }
 
   /**
-   * @protected
    * @param {*} fnName 
    * @param  {...any} params 
    */
-  notify(fnName, ...params) {
+  protected notify(fnName: string, ...params: any[]) {
     notify(this.activeScenes, fnName, ...params);
   }
 }

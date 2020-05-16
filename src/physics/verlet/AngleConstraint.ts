@@ -1,4 +1,4 @@
-import { add, addmult, sub, mult } from "../../geom";
+import { add, addmult, sub, mult } from "pixi-boilerplate/geom";
 
 export class AngleConstraint {
   protected stiffness;

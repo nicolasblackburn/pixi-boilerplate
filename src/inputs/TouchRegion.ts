@@ -1,4 +1,4 @@
-import {EventEmitter} from "../events/EventEmitter";
+import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 
 function inViewportRegion(point, region) {
   return region.x * window.innerWidth <= point.x &&

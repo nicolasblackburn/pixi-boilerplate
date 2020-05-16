@@ -1,5 +1,5 @@
-import { Animation } from "./Animation";
-import { textureFrom } from "../utils";
+import { Animation } from "pixi-boilerplate/animation/Animation";
+import { textureFrom } from "pixi-boilerplate/utils";
 
 export function lerp(from: any, to: any, t: number) {
   const t1 = typeof from;

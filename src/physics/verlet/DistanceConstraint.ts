@@ -1,4 +1,4 @@
-import { abs, add, sub, mult } from "../../geom";
+import { abs, add, sub, mult } from "pixi-boilerplate/geom";
 
 export class DistanceConstraint {
   protected stiffness;

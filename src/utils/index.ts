@@ -1,4 +1,7 @@
-import { Texture, Loader } from "pixi.js";
+import { Loader } from "pixi-boilerplate/loader/Loader";
+import { Texture } from "pixi-boilerplate/renderer/Texture";
+import { Point } from "pixi-boilerplate/geom";
+import { Ticker } from "pixi-boilerplate/animation/Ticker";
 
 export function queryString() {
   return window.location.search.slice(1).split("&").reduce((qs, kv) => {
@@ -17,7 +20,7 @@ export function queryString() {
 * @param {Loader} loader 
 * @param {{[key: string]: string}} assets 
 */
-export function load(loader: Loader, assets) {
+export function load(loader: Loader, assets: {[key: string]: string}) {
   return new Promise((resolve, reject) => {
     for (const [id, url] of Object.entries(assets)) {
       loader.add(id, url);
@@ -34,7 +37,7 @@ export function load(loader: Loader, assets) {
 * @param {() => void} callback 
 * @returns {() => void} clearTimeout
 */
-export function timeout(ticker, ms, callback) {
+export function timeout(ticker: Ticker, ms: number, callback: (...args: any[]) => any) {
   const onUpdate = () => {
     if (ms > 0) {
       ms -= ticker.elapsedMS;
@@ -48,7 +51,7 @@ export function timeout(ticker, ms, callback) {
   return () => ticker.remove(onUpdate);
 }
 
-export function parseSVGPath(path) {
+export function parseSVGPath(path: string) {
   const tokens = path.split(/[\s\t\r\n]*,[\s\t\r\n]*|[\s\t\r\n]+/);
   const helper = (last, tokens, result) => {
     if (!tokens.length) {
@@ -80,7 +83,7 @@ export function parseSVGPath(path) {
   return helper({x: 0, y: 0}, tokens, []);
 }
 
-export function notify(listeners, fnName, ...params) {
+export function notify(listeners: any, fnName: string, ...params: any[]) {
   for (const listener of listeners) {
     if (typeof listener[fnName] === 'function') {
       listener[fnName](...params);
@@ -88,7 +91,7 @@ export function notify(listeners, fnName, ...params) {
   }
 }
 
-export function textureFrom(id) {
+export function textureFrom(id: any) {
   if (id instanceof Texture) {
     return id;
   } else if (id === null) {
@@ -102,29 +105,41 @@ const { PI, atan2 } = Math;
 const PI2 = 2 * PI;
 export const DIRECTION_KEYWORD_MAP = ['right', 'down', 'down', 'down', 'left', 'up', 'up', 'up'];
 
-export function discreteAngle(samplesCount, {x, y}) {
+export function discreteAngle(samplesCount: number, {x, y}: Point) {
   return ((atan2(y, x) / PI2 * samplesCount + samplesCount + 1 / 2) % samplesCount | 0);
 }
 
-export function getDirectionKeyword(direction) {
-  return DIRECTION_KEYWORD_MAP[discreteAngle(8, direction)];
+export function getDirectionKeyword({x, y}: Point) {
+  let angle = atan2(y, x) / PI2;
+  if (angle < 0) {
+    angle += 1;
+  }
+  if (0.125 <= angle && angle <= 0.375) {
+    return 'down';
+  } else if (0.375 < angle && angle < 0.625) {
+    return 'left';
+  }  else if (0.625 <= angle && angle <= 0.875) {
+    return 'up';
+  } else {
+    return 'right';
+  }
 }
 
 const TEXT_DATA = {}; 
 let LOCALE = 'en';
 
-export function setLocale(locale) {
+export function setLocale(locale: string) {
   LOCALE = locale;
 }
 
-export function setTextData(data) {
+export function setTextData(data: {[k: string]: string}) {
   if (TEXT_DATA[LOCALE] === undefined) {
     TEXT_DATA[LOCALE] = {};
   }
   Object.assign(TEXT_DATA[LOCALE], data);
 }
 
-export function getText(text) {
+export function getText(text: string) {
   if (TEXT_DATA[LOCALE] !== undefined && TEXT_DATA[LOCALE][text] !== undefined) {
     return TEXT_DATA[LOCALE][text];
   } else {

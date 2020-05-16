@@ -1,5 +1,5 @@
-import { hasEnter, StateController } from "../states/StateController";
-import { Animation } from "./Animation";
+import { hasEnter, StateController } from "pixi-boilerplate/states/StateController";
+import { Animation } from "pixi-boilerplate/animation/Animation";
 
 export class AnimationController extends StateController<Animation> {
   /**

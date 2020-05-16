@@ -1,22 +1,26 @@
-import { load, notify } from "./utils";
-import { Layout } from "./layout/Layout";
-import { SceneController } from "./scenes/SceneController";
-import { Physics } from "./physics/Physics";
-import { Inputs } from "./inputs/Inputs";
+import { load, notify } from "pixi-boilerplate/utils";
+import { Layout } from "pixi-boilerplate/layout/Layout";
+import { SceneController } from "pixi-boilerplate/scenes/SceneController";
+import { Physics } from "pixi-boilerplate/physics/Physics";
+import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Application as PIXI_Application } from "pixi.js";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
  
 export class Application {
-  public services;
-  protected application;
-  protected framesElapsed;
-  protected listeners;
-  protected options;
+  public services: ApplicationServices;
+  protected application: PIXI_Application;
+  protected framesElapsed: number;
+  protected listeners: any[];
+  protected options: any & {
+    assets: any[],
+    scenes: any[]
+  };
 
   /**
    * 
    * @param {ApplicationOptions} options 
    */
-  constructor(options) {
+  constructor(options: any) {
     options = {
       ...options,
       assets: {

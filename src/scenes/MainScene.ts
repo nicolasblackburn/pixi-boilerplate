@@ -1,8 +1,8 @@
-import {Scene} from "./Scene";
-import { Text } from "pixi.js";
+import {Scene} from "pixi-boilerplate/scenes/Scene";
+import { Text } from "pixi-boilerplate/renderer/Text";
 
 export class MainScene extends Scene {
-  load() {
+  public load() {
     const text = new Text("Hello World", {
       fill: 0x995533
     });

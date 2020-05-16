@@ -1,13 +1,24 @@
-import { abs, mult } from "../geom";
-import { InputsState } from "./InputsState";
+import { abs, mult } from "pixi-boilerplate/geom";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
+
+export type KeyboardInputsMapping = {
+  axisUp: string,
+  axisRight: string,
+  axisDown: string,
+  axisLeft: string,
+  button0: string,
+  button1: string
+};
 
 export class KeyboardInputs {
-  protected services;
-  protected events;
-  protected keys;
-  protected cache;
-  protected state;
-  constructor({services, events, keys, state}) {
+  protected services: ApplicationServices;
+  protected events: EventEmitter;
+  protected keys: any;
+  protected cache: string[];
+  protected state: InputsState;
+  constructor({services, events, keys, state}: {services: ApplicationServices, events: EventEmitter, keys: KeyboardInputsMapping, state: InputsState}) {
     /**
      * @protected
      */

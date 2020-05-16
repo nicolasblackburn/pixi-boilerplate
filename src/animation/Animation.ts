@@ -1,5 +1,5 @@
-import {Ticker} from "./Ticker";
-import { EventEmitter } from "../events/EventEmitter";
+import {Ticker} from "pixi-boilerplate/animation/Ticker";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 
 let ids = 0;
 
