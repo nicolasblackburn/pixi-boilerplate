@@ -5,6 +5,7 @@ import { Physics } from "pixi-boilerplate/physics/Physics";
 import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Application as PIXI_Application } from "pixi.js";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
+import { Rectangle } from "pixi-boilerplate/geom";
  
 export class Application {
   public services: ApplicationServices;
@@ -46,7 +47,6 @@ export class Application {
       antialias: true,
       width: window.innerWidth,
       height: window.innerHeight,
-      resolution: window.devicePixelRatio,
       ...options
     });
 
@@ -79,7 +79,7 @@ export class Application {
   /**
    * @public
    */
-  init() {
+  public init() {
     return Promise.resolve()
     .then(() => this.initServices())
     .then(() => this.preload())
@@ -91,21 +91,21 @@ export class Application {
   /**
    * @public
    */
-  addListener(listener) {
+  public addListener(listener) {
     this.listeners.push(listener);
   }
 
   /**
    * @public
    */
-  removeListener(listenerA) {
+  public removeListener(listenerA) {
     this.listeners = this.listeners.filter(listenerB => listenerA !== listenerB);
   }
 
   /**
    * @protected
    */
-  initServices() {
+  protected initServices() {
     this.initInteraction();
     this.initInputs();
     this.initLayout();
@@ -121,21 +121,21 @@ export class Application {
   /**
    * @protected
    */
-  initInputs() {
+  protected initInputs() {
     this.services.inputs = new Inputs(this.services);
   }
 
   /**
    * @protected
    */
-  initInteraction() {
+  protected initInteraction() {
     this.services.interaction = this.application.renderer.plugins.interaction;
   }
 
   /**
    * @protected
    */
-  initLayout() {
+  protected initLayout() {
     this.services.layout = new Layout(this.services);
     this.services.layout.events.on('resize', this.resize, this);
   }
@@ -143,14 +143,14 @@ export class Application {
   /**
    * @protected
    */
-  initLoader() {
+  protected initLoader() {
     this.services.loader = this.application.loader;
   }
 
   /**
    * @protected
    */
-  initPhysics() {
+  protected initPhysics() {
     this.services.physics = new Physics({services: this.services});
     this.addListener(this.services.physics);
   }
@@ -158,14 +158,14 @@ export class Application {
   /**
    * @protected
    */
-  initRenderer() {
+  protected initRenderer() {
     this.services.renderer = this.application.renderer;
   }
 
   /**
    * @protected
    */
-  initScenes() {
+  protected initScenes() {
     const scenes = new SceneController({
       services: this.services,
       scenes: this.options.scenes
@@ -177,21 +177,21 @@ export class Application {
   /**
    * @protected
    */
-  initStage() {
+  protected initStage() {
     this.services.stage = this.application.stage;
   }
 
   /**
    * @protected
    */
-  initStorage() {
+  protected initStorage() {
     this.services.storage = window.localStorage;
   }
 
   /**
    * @protected
    */
-  initTicker() {
+  protected initTicker() {
     this.services.ticker = this.application.ticker;
     this.services.ticker.add(this.update, this);
   }
@@ -199,28 +199,28 @@ export class Application {
   /**
    * @protected
    */
-  preload() {
+  protected preload() {
     return load(this.services.loader, this.options.assets.preload);
   }
   
   /**
    * @protected
    */
-  load() {
+  protected load() {
     return load(this.services.loader, this.options.assets.load);
   }
   
   /**
    * @protected
    */
-  postLoad() {
+  protected postLoad() {
     return load(this.services.loader, this.options.assets.postLoad);
   }
   
   /**
    * @protected
    */
-  update() {
+  protected update() {
     const deltaTime = this.services.ticker.elapsedMS;
     this.notify('update', deltaTime);
   }
@@ -228,7 +228,7 @@ export class Application {
   /**
    * @protected
    */
-  error(error) {
+  protected error(error: any) {
     this.notify('error', error);
     throw error;
   }
@@ -237,7 +237,7 @@ export class Application {
    * @protected
    * @param {*} viewport 
    */
-  resize(viewport) {
+  protected resize(viewport: Rectangle) {
     this.services.renderer.resize(viewport.width, viewport.height);
     this.notify('resize', viewport);
   }
@@ -247,7 +247,7 @@ export class Application {
    * @param {*} fnName 
    * @param  {...any} params 
    */
-  notify(fnName, ...params) {
+  protected notify(fnName: string, ...params: any[]) {
     notify(this.listeners, fnName, ...params);
   }
 }
