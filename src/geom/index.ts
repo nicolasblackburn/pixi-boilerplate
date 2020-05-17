@@ -3,7 +3,7 @@ export type Rectangle = {x: number, y: number, width: number, height: number};
 export type Segment = [Point, Point];
 export type Matrix = [number, number, number, number, number, number];
 
-export function createPoint(x: number, y: number) {
+export function createPoint(x: number, y: number): Point {
   return {x, y};
 }
 
@@ -29,7 +29,7 @@ export function pointToArray(p: Point) {
   return [p.x, p.y];
 }
 
-export function createRectangle(x: number, y: number, width: number, height: number) {
+export function createRectangle(x: number, y: number, width: number, height: number): Rectangle {
   return {x, y, width, height};
 }
 
@@ -194,14 +194,18 @@ export function getBounds(rects: Rectangle[]) {
   return bounds;
 }
 
-export function pointsBounds(points: Point[]) {
-  const bounds = createRectangle(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 0, 0);
+export function pointsBounds(points: Point[], bounds?: Rectangle) {
+  if (bounds === undefined) {
+    bounds = createRectangle(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 0, 0);
+  }
+  
   for (const point of points) {
     bounds.x = Math.min(bounds.x, point.x);
     bounds.y = Math.min(bounds.y, point.y);
     bounds.width = Math.max(bounds.width, point.x - bounds.x);
     bounds.height = Math.max(bounds.height, point.y - bounds.y);
   }
+
   return bounds;
 }
 

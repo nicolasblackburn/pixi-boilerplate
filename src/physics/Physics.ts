@@ -4,16 +4,22 @@ import { Body } from "pixi-boilerplate/physics/Body";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { MapCollision } from "./MapCollision";
 import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
+import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
+import { TiledMap } from "pixi-boilerplate/map/TiledMap";
 
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
 const MAX_SKIP_STEPS = 5;
 
+function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapCollision): void} {
+  return o.onMapCollide !== undefined;
+}
+
 export class Physics {
   protected services: ApplicationServices;
   protected bodies: Body[];
-  protected map: any;
+  protected map: TiledMap;
   protected bounds: Rectangle;
   protected extraMS: number;
   protected stepDuration: number;
@@ -42,7 +48,7 @@ export class Physics {
   
   public setMap(map: any) {
     this.map = map;
-    this.setBounds(this.map.viewport);
+    this.setBounds(this.map.viewportBounds);
   }
 
   /**
@@ -118,39 +124,62 @@ export class Physics {
 
   protected processMapCollisions(previousPosition: Point, body: Body) {
     if (this.map) {
-      const displacement = sub(body.position, previousPosition);
-      let bodyRect = getBodyBounds(body);
-      const offset = addmult(-1, displacement, bodyRect);
-      const previousBodyRect = createRectangle(
-        offset.x,
-        offset.y,
-        bodyRect.width,
-        bodyRect.height
-      );
-      const clipRect = pointsBounds([
+      const displacement = POINT2D_POOL.get().assign(body.position).subtract(previousPosition);
+      const bodyRect = RECTANGLE2D_POOL.get();
+      const clipRect = RECTANGLE2D_POOL.get();
+      
+      getBodyBounds(body, bodyRect);
+
+      const previousBodyRect = RECTANGLE2D_POOL.get().assign(bodyRect).positionSubtract(displacement);
+
+      pointsBounds([
         previousBodyRect, 
         add(createPoint(previousBodyRect.width, previousBodyRect.height), previousBodyRect),
         add(displacement, previousBodyRect),
         add(displacement, createPoint(previousBodyRect.width, previousBodyRect.height), previousBodyRect)
-      ]);
-      const tiles = this.map.getSolidTilesInRectangle(clipRect);
+      ], clipRect);
+
+      const maxVisibleTilesCount = this.map.maxVisibleTilesCount.x * this.map.maxVisibleTilesCount.y;
+      const tileResources = new Array(maxVisibleTilesCount);
+      const tiles = new Array(maxVisibleTilesCount);
+      for (let i = 0; i < maxVisibleTilesCount; i++) {
+        tileResources[i] = RECTANGLE2D_POOL.get();
+        tiles[i] = tileResources[i];
+      }
+
+      this.map.getSolidTilesInRectangle(clipRect, tiles);
+
       body.position.y -= displacement.y;
-      bodyRect = getBodyBounds(body);
+      getBodyBounds(body, bodyRect);
+      
       for (const tile of tiles) {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.x = previousPosition.x;
-          body.onMapCollide(new MapCollision(createPoint(0, 1)));
+          if (hasOnMapCollide(body)) {
+            body.onMapCollide(new MapCollision(createPoint(0, 1)));
+          }
           break;
         }
       }
+
       body.position.y += displacement.y;
-      bodyRect = getBodyBounds(body);
+      getBodyBounds(body, bodyRect);
+      
       for (const tile of tiles) {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.y = previousPosition.y;
-          body.onMapCollide(new MapCollision(createPoint(1, 0)));
+          if (hasOnMapCollide(body)) {
+            body.onMapCollide(new MapCollision(createPoint(1, 0)));
+          }
           break;
         }
+      }
+
+      POINT2D_POOL.free(displacement);
+      RECTANGLE2D_POOL.free(bodyRect);
+
+      for (const tile of tileResources) {
+        RECTANGLE2D_POOL.free(tile);
       }
     }
   }
