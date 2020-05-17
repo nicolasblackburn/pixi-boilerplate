@@ -239,7 +239,7 @@ export function norm(p: Point) {
 }
 
 export function ortho(p: Point) {
-  return {x: p.y, y: -p.x};
+  return createPoint(p.y, -p.x);
 }
 
 export function orthonorm(p: Point) {

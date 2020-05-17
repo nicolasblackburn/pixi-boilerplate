@@ -1,7 +1,9 @@
-import { abs, add, addmult, clampAbs, mult, norm, createPoint, pointsBounds, pointCopy, createRectangle, rectanglesIntersect, sub, Rectangle, Point } from "pixi-boilerplate/geom";
+import { abs, add, addmult, createPoint, pointsBounds, createRectangle, rectanglesIntersect, sub, Rectangle, Point, pointCopy } from "pixi-boilerplate/geom";
 import { getBodyBounds } from "pixi-boilerplate/physics";
 import { Body } from "pixi-boilerplate/physics/Body";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
+import { MapCollision } from "./MapCollision";
+import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
@@ -16,7 +18,7 @@ export class Physics {
   protected extraMS: number;
   protected stepDuration: number;
 
-  constructor(options) {
+  constructor(options: any) {
     const {services, stepDuration}: any = {
       stepDuration: 1000 / FPS / STEPS_PER_SECOND,
       ...options
@@ -69,10 +71,11 @@ export class Physics {
     let steps = 0;
     while (this.extraMS > 0 && steps < MAX_SKIP_STEPS + STEPS_PER_SECOND) {
       for (const body of this.bodies) {
-        const previousPosition = pointCopy(body.position);
+        const lastPosition = pointCopy(body.position);
         this.updateBody(fixedDeltaTime, body, STATIC_FRICTION);
-        this.processMapCollisions(previousPosition, body);
-        body.transform.translate = mult(-1, this.map.position);
+        this.processMapCollisions(lastPosition, body);
+        body.transform.translate.x = -this.map.position.x;
+        body.transform.translate.y = -this.map.position.y;
       }
       this.extraMS -= this.stepDuration;
       steps++;
@@ -83,43 +86,44 @@ export class Physics {
   }
 
   protected updateBody(deltaTime: number, body: Body, frictionCoef: number) {
-    body.velocity = clampAbs(
-      body.maxSpeed,
-      addmult(
-        deltaTime * body.mass, 
-        body.acceleration,
-        body.velocity
-      )
-    );
+    const acceleration = POINT2D_POOL.get().assign(body.acceleration);
+    const friction = POINT2D_POOL.get().assign(body.velocity);
+    const position = POINT2D_POOL.get().assign(body.position);
+    const velocity = POINT2D_POOL.get().assign(body.velocity);
 
-    // Apply friction
-    const friction = mult(-deltaTime * body.mass * frictionCoef, norm(body.velocity));
-    if (abs(friction) < abs(body.velocity)) {
-      body.velocity = add(body.velocity, friction);
+    velocity
+      .add(
+        acceleration
+          .multiply(deltaTime * body.mass)
+    )
+    .clampRadius(body.maxSpeed)
+    .assignTo(body.velocity);
+
+    friction.normalize().multiply(-deltaTime * body.mass * frictionCoef);
+    if (friction.abs() < abs(body.velocity)) {
+      velocity.add(friction);
     } else {
-      body.velocity = createPoint(0, 0);
+      velocity.assign(0, 0);
     }
 
-    body.position = addmult(
-      deltaTime, 
-      body.velocity,
-      body.position,
-    );
-  }
+    velocity.assignTo(body.velocity);
 
-  updateVerletBody(deltaTime, body) {
-    body.velocity = addmult(deltaTime, body.acceleration, body.velocity);
-    body.position = addmult(deltaTime, body.velocity, body.position);
+    position.add(velocity.multiply(deltaTime)).assignTo(body.position);
+
+    POINT2D_POOL.free(acceleration);
+    POINT2D_POOL.free(friction);
+    POINT2D_POOL.free(position);
+    POINT2D_POOL.free(velocity);
   }
 
   protected processMapCollisions(previousPosition: Point, body: Body) {
     if (this.map) {
       const displacement = sub(body.position, previousPosition);
       let bodyRect = getBodyBounds(body);
-      const {x, y} = addmult(-1, displacement, bodyRect);
+      const offset = addmult(-1, displacement, bodyRect);
       const previousBodyRect = createRectangle(
-        x,
-        y,
+        offset.x,
+        offset.y,
         bodyRect.width,
         bodyRect.height
       );
@@ -135,7 +139,7 @@ export class Physics {
       for (const tile of tiles) {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.x = previousPosition.x;
-          body.onMapCollide({type: 'map', normal: {x: 0, y: 1}});
+          body.onMapCollide(new MapCollision(createPoint(0, 1)));
           break;
         }
       }
@@ -144,7 +148,7 @@ export class Physics {
       for (const tile of tiles) {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.y = previousPosition.y;
-          body.onMapCollide({type: 'map', normal: {x: 1, y: 0}});
+          body.onMapCollide(new MapCollision(createPoint(1, 0)));
           break;
         }
       }
