@@ -12,29 +12,16 @@ export class Inputs {
   protected services: ApplicationServices;
   protected touchInputs: TouchInputs;
 
-  constructor(services) {
-    /**
-     * @protected
-     */
+  constructor(services: ApplicationServices) {
+    const state = new InputsState();
+    const events = new EventEmitter();
+    
     this.services = services;
 
-    /**
-     * @public
-     */
-    this.state = new InputsState();
-
-    /**
-     * @public
-     */
-    this.events = new EventEmitter();
-
-    /**
-     * @protected
-     */
     this.touchInputs = new TouchInputs({
       services: this.services,
-      events: this.events,
-      state: this.state,
+      events: events,
+      state: state,
       axisDistance: 25,
       regions: {
         axis: {
@@ -58,13 +45,10 @@ export class Inputs {
       }
     });
 
-    /**
-     * @protected
-     */
     this.keyboardInputs = new KeyboardInputs({
       services: this.services,
-      events: this.events,
-      state: this.state,
+      events: events,
+      state: state,
       keys: {
         axisUp: "ArrowUp",
         axisRight: "ArrowRight",
@@ -74,5 +58,8 @@ export class Inputs {
         button1: "KeyC"
       }
     });
+
+    this.state = state;
+    this.events = events;
   }
 }

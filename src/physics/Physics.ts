@@ -127,10 +127,10 @@ export class Physics {
       const displacement = POINT2D_POOL.get().assign(body.position).subtract(previousPosition);
       const bodyRect = RECTANGLE2D_POOL.get();
       const clipRect = RECTANGLE2D_POOL.get();
+      const previousBodyRect = RECTANGLE2D_POOL.get();
       
       getBodyBounds(body, bodyRect);
-
-      const previousBodyRect = RECTANGLE2D_POOL.get().assign(bodyRect).positionSubtract(displacement);
+      previousBodyRect.assign(bodyRect).positionSubtract(displacement);
 
       pointsBounds([
         previousBodyRect, 
@@ -177,6 +177,8 @@ export class Physics {
 
       POINT2D_POOL.free(displacement);
       RECTANGLE2D_POOL.free(bodyRect);
+      RECTANGLE2D_POOL.free(clipRect);
+      RECTANGLE2D_POOL.free(previousBodyRect);
 
       for (const tile of tileResources) {
         RECTANGLE2D_POOL.free(tile);

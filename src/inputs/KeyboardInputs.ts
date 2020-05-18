@@ -18,6 +18,7 @@ export class KeyboardInputs {
   protected keys: any;
   protected cache: string[];
   protected state: InputsState;
+  
   constructor({services, events, keys, state}: {services: ApplicationServices, events: EventEmitter, keys: KeyboardInputsMapping, state: InputsState}) {
     /**
      * @protected

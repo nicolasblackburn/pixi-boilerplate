@@ -12,15 +12,17 @@ export class Pool<T> {
     }
   }
 
+  public get size() {
+    return this.pool.length;
+  }
+
   public free(element: T) {
     this.pool.push(element);
   }
 
   public get() {
     if (this.pool.length === 0) {
-      for (let i = 0; i < this.blockSize; i++) {
-        this.pool[i] = this.createFunction();
-      }
+      throw new Error("Pool size overflow.");
     } 
     return this.pool.pop();
   }
