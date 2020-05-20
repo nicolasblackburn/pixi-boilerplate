@@ -22,27 +22,7 @@ export class Inputs {
       services: this.services,
       events: events,
       state: state,
-      axisDistance: 25,
-      regions: {
-        axis: {
-          x: 0,
-          y: 0,
-          width: 0.5,
-          height: 1
-        },
-        button0: {
-          x: 0.5,
-          y: 0.5,
-          width: 0.5,
-          height: 0.5
-        },
-        button1: {
-          x: 0.5,
-          y: 0,
-          width: 0.5,
-          height: 0.5
-        }
-      }
+      axisDistance: 25
     });
 
     this.keyboardInputs = new KeyboardInputs({

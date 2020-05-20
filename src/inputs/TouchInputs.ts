@@ -1,38 +1,27 @@
 import { MultiTouch } from "pixi-boilerplate/inputs/MultiTouch";
 import { TouchRegion } from "pixi-boilerplate/inputs/TouchRegion";
-import { sub, mult, abs } from "pixi-boilerplate/geom";
+import { sub, mult, abs, createRectangle } from "pixi-boilerplate/geom";
+import { InputsState } from "./InputsState";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 const { min } = Math;
 
 export class TouchInputs {
-  protected services;
-  protected events;
-  protected state;
-  protected axis;
-  protected button0;
-  protected button1;
-
+  protected events: EventEmitter;
+  protected services: ApplicationServices;
+  protected state: InputsState;
+  protected touchRegion: TouchRegion;
 
   constructor({
     services, 
     events,
     axisDistance,
-    regions,
     state,
     debug
   }: any) {
-    /**
-     * @protected
-     */
-    this.services = services;
 
-    /**
-     * @protected
-     */
     this.events = events;
-    
-    /**
-     * @protected
-     */
+    this.services = services;
     this.state = state;
 
     if (debug) {
@@ -48,33 +37,14 @@ export class TouchInputs {
       document.body.appendChild(debugText);
     }
 
-    const multiTouch = new MultiTouch(services.interaction);
+    const multiTouch = new MultiTouch(services);
     
-    /**
-     * @protected
-     */
-    this.axis = new TouchRegion({
+    this.touchRegion = new TouchRegion({
       multiTouch,
-      region: regions.axis
-    });
-    
-    /**
-     * @protected
-     */
-    this.button0 = new TouchRegion({
-      multiTouch,
-      region: regions.button0
-    });
-    
-    /**
-     * @protected
-     */
-    this.button1 = new TouchRegion({
-      multiTouch,
-      region: regions.button1
+      region: createRectangle(0, 0, 1, 1)
     });
 
-    this.axis.on('touchmove', ({from, to}) => {
+    this.touchRegion.on('touchmove', ({from, to}) => {
       let displacement = sub(to, from);
       if (displacement.x === 0 && displacement.y === 0) {
         this.state.axis.x = 0;
@@ -88,46 +58,26 @@ export class TouchInputs {
       this.events.emit('inputChanged', {axis: this.state.axis});
     });
     
-    this.axis.on('touchend', () => {
+    this.touchRegion.on('touchend', () => {
       this.state.axis.x = 0;
       this.state.axis.y = 0;
       this.events.emit('inputChanged', {axis: this.state.axis});
     });
 
-    this.axis.on('touchendoutside', () => {
+    this.touchRegion.on('touchendoutside', () => {
       this.state.axis.x = 0;
       this.state.axis.y = 0;
       this.events.emit('inputChanged', {axis: this.state.axis});
     });
 
-    this.button0.on('touchstart', () => {
+    this.touchRegion.on('tapPressed', () => {
       this.state.button0.pressed = true;
       this.events.emit('inputChanged', {button0: this.state.button0});
     });
 
-    this.button0.on('touchend', () => {
+    this.touchRegion.on('tapReleased', () => {
       this.state.button0.pressed = false;
       this.events.emit('inputChanged', {button0: this.state.button0});
-    });
-
-    this.button0.on('touchcancel', () => {
-      this.state.button0.pressed = false;
-      this.events.emit('inputChanged', {button0: this.state.button0});
-    });
-
-    this.button1.on('touchstart', () => {
-      this.state.button1.pressed = true;
-      this.events.emit('inputChanged', {button1: this.state.button1});
-    });
-
-    this.button1.on('touchend', () => {
-      this.state.button1.pressed = false;
-      this.events.emit('inputChanged', {button1: this.state.button1});
-    });
-
-    this.button1.on('touchcancel', () => {
-      this.state.button1.pressed = false;
-      this.events.emit('inputChanged', {button1: this.state.button1});
     });
   }
 }
