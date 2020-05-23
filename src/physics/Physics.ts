@@ -2,26 +2,28 @@ import { abs, add, addmult, createPoint, pointsBounds, createRectangle, rectangl
 import { getBodyBounds } from "pixi-boilerplate/physics";
 import { Body } from "pixi-boilerplate/physics/Body";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
-import { MapCollision } from "./MapCollision";
+import { MapWallCollision } from "./MapWallCollision";
 import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
 import { TiledMap } from "pixi-boilerplate/map/TiledMap";
+import { MapRoomBoundsCollision } from "./MapRoomBoundsCollision";
 
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
 const MAX_SKIP_STEPS = 5;
 
-function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapCollision): void} {
+function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapWallCollision): void} {
   return o.onMapCollide !== undefined;
 }
 
 export class Physics {
-  protected services: ApplicationServices;
   protected bodies: Body[];
-  protected map: TiledMap;
   protected bounds: Rectangle;
   protected extraMS: number;
+  protected heroEntity: any;
+  protected map: TiledMap;
+  protected services: ApplicationServices;
   protected stepDuration: number;
 
   constructor(options: any) {
@@ -32,10 +34,10 @@ export class Physics {
 
     const {renderer} = services;
 
-    this.services = services;
     this.bodies = [];
     this.bounds = createRectangle(0, 0, renderer.width, renderer.height);
     this.extraMS = 0;
+    this.services = services;
     this.stepDuration = stepDuration;
   }
 
@@ -46,9 +48,13 @@ export class Physics {
     this.bounds = bounds;
   }
   
-  public setMap(map: any) {
+  public setMap(map: TiledMap) {
     this.map = map;
     this.setBounds(this.map.viewportBounds);
+  }
+
+  public setHeroEntity(entity: any) {
+    this.heroEntity = entity;
   }
 
   /**
@@ -156,7 +162,7 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.x = previousPosition.x;
           if (hasOnMapCollide(body)) {
-            body.onMapCollide(new MapCollision(createPoint(0, 1)));
+            body.onMapWallCollide(new MapWallCollision(createPoint(0, 1)));
           }
           break;
         }
@@ -169,9 +175,23 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.y = previousPosition.y;
           if (hasOnMapCollide(body)) {
-            body.onMapCollide(new MapCollision(createPoint(1, 0)));
+            body.onMapWallCollide(new MapWallCollision(createPoint(1, 0)));
           }
           break;
+        }
+      }
+
+      if (this.heroEntity === body.entity) {
+        getBodyBounds(body, bodyRect);
+  
+        if (body.position.x < this.map.getCurrentRoom().bounds.x) {
+          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(1, 0)));
+        } else if (body.position.x >= this.map.getCurrentRoom().bounds.x + this.map.getCurrentRoom().bounds.width) {
+          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(-1, 0)));
+        } else if (body.position.y < this.map.getCurrentRoom().bounds.y) {
+          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(0, 1)));
+        } else if (body.position.y >= this.map.getCurrentRoom().bounds.y + this.map.getCurrentRoom().bounds.height) {
+          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(0, -1)));
         }
       }
 
