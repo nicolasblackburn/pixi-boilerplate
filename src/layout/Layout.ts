@@ -1,32 +1,21 @@
 import { timeout } from "pixi-boilerplate/utils";
 import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
-import { createRectangle, rectangleEqual } from "pixi-boilerplate/geom";
+import { createRectangle, rectangleEqual, Rectangle } from "pixi-boilerplate/geom";
+import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
+import { resizeInto } from ".";
 
 export class Layout {
-  public events;
-  public viewport;
-  protected services;
-  protected scheduledResize;
+  public events: EventEmitter;
+  public gameBounds: Rectangle;
+  public viewport: Rectangle;
+  protected services: ApplicationServices;
+  protected scheduledResize: (...args: any[]) => any;
 
-  constructor(services) {
-    /**
-     * @public
-     */
+  constructor({gameBounds, services}: {gameBounds: Rectangle, services: ApplicationServices}) {
     this.events = new EventEmitter();
-
-    /**
-     * @public
-     */
+    this.gameBounds = gameBounds;
     this.viewport = createRectangle(0, 0, window.innerWidth, window.innerHeight);
-
-    /**
-     * @protected
-     */
     this.services = services;
-
-    /**
-     * @protected
-     */
     this.scheduledResize = null;
 
     window.addEventListener("resize", () => this.resize({
@@ -37,18 +26,13 @@ export class Layout {
     }));
   }
 
-  /**
-   * @protected
-   */
-  triggerResize() {
+  public triggerResize() {
+    this.services.renderer.resize(this.viewport.width, this.viewport.height);
+    resizeInto(this.viewport, this.gameBounds, this.services.stage);
     this.events.emit("resize", this.viewport);
   } 
 
-  /**
-   * @protected
-   * @param {Rectangle} viewport
-   */
-  resize(viewport) {
+  protected resize(viewport: Rectangle) {
     if (!rectangleEqual(this.viewport, viewport)) {
       this.viewport = viewport;
       if (!this.scheduledResize) {

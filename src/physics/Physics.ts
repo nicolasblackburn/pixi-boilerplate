@@ -7,6 +7,7 @@ import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
 import { TiledMap } from "pixi-boilerplate/map/TiledMap";
 import { MapRoomBoundsCollision } from "./MapRoomBoundsCollision";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 
 const STATIC_FRICTION = 300;
 const STEPS_PER_SECOND = 10;
@@ -18,6 +19,7 @@ function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapWallCollision
 }
 
 export class Physics {
+  public events: EventEmitter;
   protected bodies: Body[];
   protected bounds: Rectangle;
   protected extraMS: number;
@@ -34,6 +36,7 @@ export class Physics {
 
     const {renderer} = services;
 
+    this.events = new EventEmitter();
     this.bodies = [];
     this.bounds = createRectangle(0, 0, renderer.width, renderer.height);
     this.extraMS = 0;
@@ -68,13 +71,6 @@ export class Physics {
   }
 
   /**
-   * @param {Body} body 
-   */
-  public removeBody(body: Body) {
-    this.bodies = this.bodies.filter(bodyB => bodyB !== body);
-  }
-
-  /**
    * @param {number} deltaTime 
    */
   public update(deltaTime: number) {
@@ -89,12 +85,24 @@ export class Physics {
         body.transform.translate.x = -this.map.position.x;
         body.transform.translate.y = -this.map.position.y;
       }
+      this.triggerUpdate(fixedDeltaTime);
       this.extraMS -= this.stepDuration;
       steps++;
     } 
     if (steps >= MAX_SKIP_STEPS + STEPS_PER_SECOND) {
       this.extraMS = 0;
     }
+  }
+
+  /**
+   * @param {Body} body 
+   */
+  public removeBody(body: Body) {
+    this.bodies = this.bodies.filter(bodyB => bodyB !== body);
+  }
+
+  protected triggerUpdate(deltaTime: number) {
+    this.events.emit("fixedUpdate", deltaTime);
   }
 
   protected updateBody(deltaTime: number, body: Body, frictionCoef: number) {
