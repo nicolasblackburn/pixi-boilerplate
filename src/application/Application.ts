@@ -174,7 +174,6 @@ export class Application {
   }
   
   protected inputChanged(state: InputsState) {
-    console.log(state);
     this.notify('inputChanged', state);
   }
   

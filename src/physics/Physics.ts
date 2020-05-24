@@ -124,7 +124,7 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.x = previousPosition.x;
           if (hasOnMapCollide(body)) {
-            body.onMapCollide(new MapCollision(createPoint(0, 1)));
+            body.onMapCollide(new MapCollision(createPoint(displacement.x < 0 ? 1 : -1, 0)));
           }
           break;
         }
@@ -137,7 +137,7 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.y = previousPosition.y;
           if (hasOnMapCollide(body)) {
-            body.onMapCollide(new MapCollision(createPoint(1, 0)));
+            body.onMapCollide(new MapCollision(createPoint(0, displacement.y < 0 ? 1 : -1)));
           }
           break;
         }
