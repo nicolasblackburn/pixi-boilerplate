@@ -1,45 +1,32 @@
-import { abs, add, addmult, createPoint, pointsBounds, createRectangle, rectanglesIntersect, sub, Rectangle, Point, pointCopy } from "pixi-boilerplate/geom";
+import { abs, add, createPoint, pointsBounds, rectanglesIntersect, Point, pointCopy } from "pixi-boilerplate/geom";
 import { getBodyBounds } from "pixi-boilerplate/physics";
 import { Body } from "pixi-boilerplate/physics/Body";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
-import { MapWallCollision } from "./MapWallCollision";
+import { MapCollision } from "./MapCollision";
 import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
 import { TiledMap } from "pixi-boilerplate/map/TiledMap";
-import { MapRoomBoundsCollision } from "./MapRoomBoundsCollision";
-import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 
 const STATIC_FRICTION = 300;
 
-function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapWallCollision): void} {
+function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapCollision): void} {
   return o.onMapCollide !== undefined;
 }
 
 export class Physics {
   protected bodies: Body[];
-  protected bounds: Rectangle;
   protected map: TiledMap;
   protected services: ApplicationServices;
 
   constructor(options: any) {
     const {services} = options;
-    const {renderer} = services;
 
     this.bodies = [];
-    this.bounds = createRectangle(0, 0, renderer.width, renderer.height);
     this.services = services;
-  }
-
-  /**
-   * @param {Rectangle} bounds 
-   */
-  public setBounds(bounds: Rectangle) {
-    this.bounds = bounds;
   }
   
   public setMap(map: TiledMap) {
     this.map = map;
-    this.setBounds(this.map.viewportBounds);
   }
 
   /**
@@ -137,7 +124,7 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.x = previousPosition.x;
           if (hasOnMapCollide(body)) {
-            body.onMapWallCollide(new MapWallCollision(createPoint(0, 1)));
+            body.onMapCollide(new MapCollision(createPoint(0, 1)));
           }
           break;
         }
@@ -150,7 +137,7 @@ export class Physics {
         if (rectanglesIntersect(bodyRect, tile)) {
           body.position.y = previousPosition.y;
           if (hasOnMapCollide(body)) {
-            body.onMapWallCollide(new MapWallCollision(createPoint(1, 0)));
+            body.onMapCollide(new MapCollision(createPoint(1, 0)));
           }
           break;
         }

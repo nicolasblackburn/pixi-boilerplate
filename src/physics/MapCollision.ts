@@ -1,7 +1,7 @@
 import { Point } from "pixi-boilerplate/geom";
 
-export class MapRoomBoundsCollision {
-  public type: string = "maproombounds";
+export class MapCollision {
+  public type: string = "map";
   public normal: Point;
 
   constructor(normal: Point) {

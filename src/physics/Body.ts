@@ -7,7 +7,7 @@ export class Body {
   public entity: any;
   public mass: number;
   public maxSpeed: number;
-  public onMapWallCollide: (...args: any[]) => void;
+  public onMapCollide: (...args: any[]) => void;
   public position: Point;
   public transform: {
     translate: Point,
@@ -35,7 +35,7 @@ export class Body {
     this.entity = options.entity;
     this.mass = options.mass;
     this.maxSpeed = options.maxSpeed;
-    this.onMapWallCollide = options.onMapWallCollide;
+    this.onMapCollide = options.onMapWallCollide;
     this.position = options.position;
     this.transform = {
       translate: createPoint(0, 0),
