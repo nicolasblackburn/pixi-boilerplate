@@ -6,17 +6,24 @@ import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Application as PIXI_Application } from "pixi.js";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Rectangle, createRectangle } from "pixi-boilerplate/geom";
+
+const STEPS_PER_SECOND = 10;
+const FPS = 60;
+const MAX_SKIP_STEPS = 5;
  
 export class Application {
   public services: ApplicationServices;
   protected application: PIXI_Application;
+  protected extraMS: number;
   protected framesElapsed: number;
-  protected gameBounds: Rectangle;
   protected listeners: any[];
   protected options: any & {
     assets: any[],
+    fixedUpdateStepDuration: number,
+    gameBounds: Rectangle,
     scenes: any[]
   };
+  protected stepDuration: number;
 
   /**
    * 
@@ -24,6 +31,7 @@ export class Application {
    */
   constructor(options: any) {
     options = {
+      fixedUpdateStepDuration: 1000 / FPS / STEPS_PER_SECOND,
       gameBounds: createRectangle(0, 0, window.innerWidth, window.innerHeight),
       ...options,
       assets: {
@@ -35,6 +43,7 @@ export class Application {
     };
 
     this.options = {
+      fixedUpdateStepDuration: options.fixedUpdateStepDuration,
       gameBounds: options.gameBounds,
       assets: options.assets,
       scenes: options.scenes
@@ -62,6 +71,7 @@ export class Application {
       ticker: null
     };
 
+    this.extraMS = 0;
     this.framesElapsed = 0;
 
     document.body.appendChild(this.application.view);
@@ -117,7 +127,6 @@ export class Application {
 
   protected initPhysics() {
     this.services.physics = new Physics({services: this.services});
-    this.services.physics.events.on('fixedUpdate', this.fixedUpdate, this);
     this.addListener(this.services.physics);
   }
 
@@ -165,6 +174,20 @@ export class Application {
   
   protected update() {
     const deltaTime = this.services.ticker.elapsedMS;
+    this.extraMS += deltaTime;
+    const fixedDeltaTime = this.options.fixedUpdateStepDuration / 1000;
+    let steps = 0;
+    
+    while (this.extraMS > 0 && steps < MAX_SKIP_STEPS + STEPS_PER_SECOND) {
+      this.notify('fixedUpdate', fixedDeltaTime);
+      this.extraMS -= this.options.fixedUpdateStepDuration;
+      steps++;
+    } 
+
+    if (steps >= MAX_SKIP_STEPS + STEPS_PER_SECOND) {
+      this.extraMS = 0;
+    }
+
     this.notify('update', deltaTime);
   }
 

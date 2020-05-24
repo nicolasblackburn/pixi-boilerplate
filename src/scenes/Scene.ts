@@ -30,20 +30,18 @@ export class Scene {
     this.listeners.splice(priority ? priority : 0, 0, listener);
   }
 
-  /**
-   * @param {Listener} listener 
-   */
+  public fixedUpdate(deltaTime: number) {
+    this.notify('fixedUpdate', deltaTime);
+  }
+
   public removeListener(listener: any) {
     this.listeners = this.listeners.filter(listenerB => listenerB !== listener);
   }
 
-  public resize(viewport: Rectangle) {
+  public resize(viewport: Rectangle) { 
+    this.notify('resize', viewport);
   }
 
-  /**
-   * @public
-   * @param {number} deltaTime 
-   */
   public update(deltaTime: number) {
     this.notify('update', deltaTime);
   }

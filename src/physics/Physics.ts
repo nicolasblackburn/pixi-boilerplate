@@ -10,38 +10,24 @@ import { MapRoomBoundsCollision } from "./MapRoomBoundsCollision";
 import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 
 const STATIC_FRICTION = 300;
-const STEPS_PER_SECOND = 10;
-const FPS = 60;
-const MAX_SKIP_STEPS = 5;
 
 function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapWallCollision): void} {
   return o.onMapCollide !== undefined;
 }
 
 export class Physics {
-  public events: EventEmitter;
   protected bodies: Body[];
   protected bounds: Rectangle;
-  protected extraMS: number;
-  protected heroEntity: any;
   protected map: TiledMap;
   protected services: ApplicationServices;
-  protected stepDuration: number;
 
   constructor(options: any) {
-    const {services, stepDuration}: any = {
-      stepDuration: 1000 / FPS / STEPS_PER_SECOND,
-      ...options
-    };
-
+    const {services} = options;
     const {renderer} = services;
 
-    this.events = new EventEmitter();
     this.bodies = [];
     this.bounds = createRectangle(0, 0, renderer.width, renderer.height);
-    this.extraMS = 0;
     this.services = services;
-    this.stepDuration = stepDuration;
   }
 
   /**
@@ -54,10 +40,6 @@ export class Physics {
   public setMap(map: TiledMap) {
     this.map = map;
     this.setBounds(this.map.viewportBounds);
-  }
-
-  public setHeroEntity(entity: any) {
-    this.heroEntity = entity;
   }
 
   /**
@@ -73,24 +55,13 @@ export class Physics {
   /**
    * @param {number} deltaTime 
    */
-  public update(deltaTime: number) {
-    this.extraMS += deltaTime;
-    const fixedDeltaTime = this.stepDuration / 1000;
-    let steps = 0;
-    while (this.extraMS > 0 && steps < MAX_SKIP_STEPS + STEPS_PER_SECOND) {
-      for (const body of this.bodies) {
-        const lastPosition = pointCopy(body.position);
-        this.updateBody(fixedDeltaTime, body, STATIC_FRICTION);
-        this.processMapCollisions(lastPosition, body);
-        body.transform.translate.x = -this.map.position.x;
-        body.transform.translate.y = -this.map.position.y;
-      }
-      this.triggerUpdate(fixedDeltaTime);
-      this.extraMS -= this.stepDuration;
-      steps++;
-    } 
-    if (steps >= MAX_SKIP_STEPS + STEPS_PER_SECOND) {
-      this.extraMS = 0;
+  public fixedUpdate(deltaTime: number) {
+    for (const body of this.bodies) {
+      const lastPosition = pointCopy(body.position);
+      this.updateBody(deltaTime, body, STATIC_FRICTION);
+      this.processMapCollisions(lastPosition, body);
+      body.transform.translate.x = -this.map.position.x;
+      body.transform.translate.y = -this.map.position.y;
     }
   }
 
@@ -99,10 +70,6 @@ export class Physics {
    */
   public removeBody(body: Body) {
     this.bodies = this.bodies.filter(bodyB => bodyB !== body);
-  }
-
-  protected triggerUpdate(deltaTime: number) {
-    this.events.emit("fixedUpdate", deltaTime);
   }
 
   protected updateBody(deltaTime: number, body: Body, frictionCoef: number) {
@@ -186,20 +153,6 @@ export class Physics {
             body.onMapWallCollide(new MapWallCollision(createPoint(1, 0)));
           }
           break;
-        }
-      }
-
-      if (this.heroEntity === body.entity) {
-        getBodyBounds(body, bodyRect);
-  
-        if (body.position.x < this.map.getCurrentRoom().bounds.x) {
-          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(1, 0)));
-        } else if (body.position.x >= this.map.getCurrentRoom().bounds.x + this.map.getCurrentRoom().bounds.width) {
-          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(-1, 0)));
-        } else if (body.position.y < this.map.getCurrentRoom().bounds.y) {
-          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(0, 1)));
-        } else if (body.position.y >= this.map.getCurrentRoom().bounds.y + this.map.getCurrentRoom().bounds.height) {
-          this.map.onRoomBoundsCollide(new MapRoomBoundsCollision(createPoint(0, -1)));
         }
       }
 

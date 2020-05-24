@@ -8,6 +8,10 @@ export function hasLoad(o: any): o is {load(...args: any[]): any} {
   return o.load !== undefined;
 }
 
+export function hasResize(o: any): o is {resize(...args: any[]): any} {
+  return o.resize !== undefined;
+}
+
 export class SceneController {
   protected activeScenes: Scene[];
   protected services: ApplicationServices;
@@ -16,53 +20,31 @@ export class SceneController {
   protected currentSceneName: string;
 
   constructor({scenes, services}: {scenes: {[k: string]: Scene}, services: ApplicationServices}) {
-    /**
-     * protected
-     */
     this.activeScenes = [];
-
-    /**
-     * protected
-     */
     this.services = services;
-
-    /**
-     * protected
-     */
     this.scenes = scenes;
-
-    /**
-     * protected
-     */
     this.loadedScenes = Object.keys(scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
-
-    /**
-     * protected
-     */
     this.currentSceneName = null;
     
     this.initScenes();
   }
 
-  /**
-   * @public
-   */
   public get current() {
     return this.scenes[this.currentSceneName];
   }
 
-  /**
-   * @public
-   * @param {string} sceneName 
-   */
+  public addActiveScene(scene: Scene) {
+    this.activeScenes.push(scene);
+  }
+
+  public fixedUpdate(deltaTime: number) {
+    this.notify('fixedUpdate', deltaTime);
+  }
+
   public get(sceneName: string) {
     return this.scenes[sceneName];
   }
 
-  /**
-   * @param {string} newSceneName 
-   * @param {[key: string]: any} params 
-   */
   public play(newSceneName: string, params?: any) {
     const newScene = this.scenes[newSceneName];
     if (!newScene) {
@@ -89,7 +71,7 @@ export class SceneController {
               return Promise.resolve();
             }
           })
-          .then(() => newScene.resize(this.services.layout.viewport))
+          .then(() => hasResize(newScene) ? newScene.resize(this.services.layout.viewport) : null)
           .then(() => this.loadedScenes[newSceneName] = true) as Promise<void>;
       } else {
         return Promise.resolve();
@@ -119,6 +101,18 @@ export class SceneController {
     })
   }
 
+  public removeActiveScene(sceneA: Scene) {
+    this.activeScenes = this.activeScenes.filter(sceneB => sceneA !== sceneB);
+  }
+
+  public resize(viewport: Rectangle) {
+    this.notify('resize', viewport);
+  }
+
+  public update(deltaTime: number) {
+    this.notify('update', deltaTime);
+  }
+
   protected initScenes() {
     for (const [key, value] of Object.entries(this.scenes)) {
       if (typeof (value as any) === "function") {
@@ -128,32 +122,6 @@ export class SceneController {
     } 
   }
 
-  /**
-   * @param {number} deltaTime
-   */
-  public update(deltaTime: number) {
-    this.notify('update', deltaTime);
-  }
-
-  /**
-   * @param {Rectangle} viewport 
-   */
-  public resize(viewport: Rectangle) {
-    this.notify('resize', viewport);
-  }
-
-  public addActiveScene(scene: Scene) {
-    this.activeScenes.push(scene);
-  }
-
-  public removeActiveScene(sceneA: Scene) {
-    this.activeScenes = this.activeScenes.filter(sceneB => sceneA !== sceneB);
-  }
-
-  /**
-   * @param {*} fnName 
-   * @param  {...any} params 
-   */
   protected notify(fnName: string, ...params: any[]) {
     notify(this.activeScenes, fnName, ...params);
   }
