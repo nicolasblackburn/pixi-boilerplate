@@ -3,6 +3,9 @@ import { Scene } from "pixi-boilerplate/scenes/Scene";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { hasExit, hasEnter } from "pixi-boilerplate/states/StateController";
 import { Rectangle } from "pixi-boilerplate/geom";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
+
+const SKIP_INPUT_CHANGED_MS = 101;
 
 export function hasLoad(o: any): o is {load(...args: any[]): any} {
   return o.load !== undefined;
@@ -18,6 +21,7 @@ export class SceneController {
   protected scenes: {[k: string]: Scene};
   protected loadedScenes: {[k: string]: boolean};
   protected currentSceneName: string;
+  protected skipInputChangesTimeout: number;
 
   constructor({scenes, services}: {scenes: {[k: string]: Scene}, services: ApplicationServices}) {
     this.activeScenes = [];
@@ -45,6 +49,12 @@ export class SceneController {
     return this.scenes[sceneName];
   }
 
+  public inputChanged(state: InputsState) {
+    if (!this.skipInputChangesTimeout) {
+      this.notify('inputChanged', state);
+    }
+  }
+
   public play(newSceneName: string, params?: any) {
     const newScene = this.scenes[newSceneName];
     if (!newScene) {
@@ -59,6 +69,7 @@ export class SceneController {
     } else {
       this.services.stage.addChild(newScene.container);
     }
+    this.skipInputChangesTimeout = SKIP_INPUT_CHANGED_MS;
 
     return Promise.resolve()
     .then(() => {
@@ -106,10 +117,17 @@ export class SceneController {
   }
 
   public resize(viewport: Rectangle) {
-    this.notify('resize', viewport);
+    for (const scene of Object.values(this.scenes)) {
+      if (hasResize(scene)) {
+        scene.resize(viewport);
+      }
+    }
   }
 
   public update(deltaTime: number) {
+    if (this.skipInputChangesTimeout > 0) {
+      this.skipInputChangesTimeout = Math.max(0, this.skipInputChangesTimeout - deltaTime);
+    }
     this.notify('update', deltaTime);
   }
 

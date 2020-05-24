@@ -2,6 +2,9 @@ import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { abs, createPoint } from "pixi-boilerplate/geom";
 
+const TAP_THRESHOLD_MS = 100;
+const DISTANCE_THRESHOLD_PX = 10;
+
 function findClosest(touch, touches) {
   const [closest] = touches.reduce(([min, minDist], {x, y, id, started, pressed}) => {
     const dx = touch.x - x;
@@ -50,8 +53,8 @@ export class MultiTouch {
   constructor(services) {
     this.emitter = new EventEmitter();
     this.services = services;
-    this.distanceThreshold = 10;
-    this.timeThreshold = 100;
+    this.distanceThreshold = DISTANCE_THRESHOLD_PX;
+    this.timeThreshold = TAP_THRESHOLD_MS;
 
     this.touches = [];
     const handlers = {

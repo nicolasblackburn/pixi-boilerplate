@@ -6,6 +6,7 @@ import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Application as PIXI_Application } from "pixi.js";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Rectangle, createRectangle } from "pixi-boilerplate/geom";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
 
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
@@ -109,6 +110,7 @@ export class Application {
 
   protected initInputs() {
     this.services.inputs = new Inputs(this.services);
+    this.services.inputs.events.on('inputChanged', this.inputChanged, this);
   }
 
   protected initInteraction() {
@@ -135,12 +137,11 @@ export class Application {
   }
 
   protected initScenes() {
-    const scenes = new SceneController({
+    this.services.scenes = new SceneController({
       services: this.services,
       scenes: this.options.scenes
     });
-    this.addListener(scenes);
-    this.services.scenes = scenes;
+    this.addListener(this.services.scenes);
   }
 
   protected initStage() {
@@ -170,6 +171,11 @@ export class Application {
   
   protected fixedUpdate(deltaTime: number) {
     this.notify('fixedUpdate', deltaTime);
+  }
+  
+  protected inputChanged(state: InputsState) {
+    console.log(state);
+    this.notify('inputChanged', state);
   }
   
   protected update() {

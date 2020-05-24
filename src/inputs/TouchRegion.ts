@@ -9,34 +9,6 @@ function inViewportRegion(point, region) {
     point.y <= (region.y + region.height) * window.innerHeight;
 }
 
-function debug(event, start, region) {
-  const debug = document.getElementById('debug') as HTMLInputElement;
-  if (debug) {
-    debug.value = 
-  `${event.type}: {
-    region: {
-      x: ${region.x * window.innerWidth},
-      y: ${region.y * window.innerHeight},
-      width: ${region.width * window.innerWidth},
-      height: ${region.height * window.innerHeight}
-    },
-    inRegion: ${inViewportRegion(event.touch, region) ? 'true' : 'false'},
-    start: ${start ? `{
-      id: ${start.id},
-      x: ${start.x},
-      y: ${start.y}
-    }`: 'undefined'},
-    touches: [${event.touches.map(({id}) => id)}],
-    touch: {
-      id: ${event.touch.id},
-      x: ${event.touch.x},
-      y: ${event.touch.y}
-    }
-  }
-  `;
-  }
-}
-
 export class TouchRegion {
   protected emitter: EventEmitter;
   protected multiTouch: MultiTouch;

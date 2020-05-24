@@ -2,6 +2,7 @@ import { notify } from "pixi-boilerplate/utils";
 import { Container } from "pixi-boilerplate/renderer/Container";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Rectangle } from "pixi-boilerplate/geom";
+import { InputsState } from "pixi-boilerplate/inputs/InputsState";
 
 export type SceneOptions = {
   services: ApplicationServices;
@@ -10,8 +11,8 @@ export type SceneOptions = {
 export class Scene {
   public container: Container;
   public name: string;
-  protected services: ApplicationServices;
   protected listeners: any[];
+  protected services: ApplicationServices;
 
   constructor(options: SceneOptions) {
     const {services} = options;
@@ -22,16 +23,16 @@ export class Scene {
     this.container = new Container();
   }
 
-  /**
-   * @param {Listener} listener 
-   * @param {number} priority 
-   */
   public addListener(listener: any, priority?: number) {
     this.listeners.splice(priority ? priority : 0, 0, listener);
   }
 
   public fixedUpdate(deltaTime: number) {
     this.notify('fixedUpdate', deltaTime);
+  }
+
+  public inputChanged(inputs: InputsState) { 
+    this.notify('inputChanged', inputs);
   }
 
   public removeListener(listener: any) {
