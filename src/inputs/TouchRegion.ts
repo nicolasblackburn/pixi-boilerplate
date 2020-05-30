@@ -21,18 +21,18 @@ export class TouchRegion {
 
     let start;
     const handlers = {
-      tapPressed: (event) => {
-        if (event.type === 'tapPressed' && inViewportRegion(event.touch, this.region)) {
-          this.multiTouch.on('tapReleased', handlers.tapReleased);
+      tappressed: (event) => {
+        if (event.type === 'tappressed' && inViewportRegion(event.touch, this.region)) {
+          this.multiTouch.on('tapreleased', handlers.tapreleased);
           this.emitter.emit(event.type, {
             type: event.type,
             from: event.touch
           });
         }
       },
-      tapReleased: (event) => {
-        if (event.type === 'tapReleased' && inViewportRegion(event.touch, this.region)) {
-          this.multiTouch.off('tapReleased');
+      tapreleased: (event) => {
+        if (event.type === 'tapreleased' && inViewportRegion(event.touch, this.region)) {
+          this.multiTouch.off('tapreleased');
           this.emitter.emit(event.type, {
             type: event.type,
             from: event.touch
@@ -91,7 +91,7 @@ export class TouchRegion {
       }
     };
     this.multiTouch.on('touchstart', handlers.touchstart);
-    this.multiTouch.on('tapPressed', handlers.tapPressed);
+    this.multiTouch.on('tappressed', handlers.tappressed);
   }
 
   public on(event, fn, priority?) {

@@ -2,9 +2,6 @@ import {EventEmitter} from "pixi-boilerplate/events/EventEmitter";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { abs, createPoint } from "pixi-boilerplate/geom";
 
-const TAP_THRESHOLD_MS = 100;
-const DISTANCE_THRESHOLD_PX = 10;
-
 function findClosest(touch, touches) {
   const [closest] = touches.reduce(([min, minDist], {x, y, id, started, pressed}) => {
     const dx = touch.x - x;
@@ -48,13 +45,15 @@ export class MultiTouch {
   protected services: ApplicationServices;
   protected distanceThreshold: number;
   protected timeThreshold: number;
+  protected delayTouchStart: boolean;
   protected touches: TouchInfo[];
 
-  constructor(services) {
+  constructor({services, delayTouchStart, touchStartDistanceThresold, tapTimeThresold}) {
     this.emitter = new EventEmitter();
     this.services = services;
-    this.distanceThreshold = DISTANCE_THRESHOLD_PX;
-    this.timeThreshold = TAP_THRESHOLD_MS;
+    this.distanceThreshold = touchStartDistanceThresold;
+    this.timeThreshold = tapTimeThresold;
+    this.delayTouchStart = delayTouchStart;
 
     this.touches = [];
     const handlers = {
@@ -74,21 +73,30 @@ export class MultiTouch {
         const touch = new TouchInfo(id, event.data.global.x, event.data.global.y);
         this.touches.push(touch);
 
-        // Here we start a timeout, if after a short delay, the touch haven't moved, then send a tapPressed
-        const update = () => {
-          if (performance.now() - touch.startTime >= this.timeThreshold) {
-            this.services.ticker.remove(update);
-            if (!touch.started && !touch.pressed) {
-              touch.pressed = true;
-              this.emitter.emit('tapPressed', {
-                type: 'tapPressed',
-                touches: this.touches,
-                touch
-              });
+        if (this.delayTouchStart) {
+          // Here we start a timeout, if after a short delay, the touch haven't moved, then send a tapPressed
+          const update = () => {
+            if (performance.now() - touch.startTime >= this.timeThreshold) {
+              this.services.ticker.remove(update);
+              if (!touch.started && !touch.pressed) {
+                touch.pressed = true;
+                this.emitter.emit('tappressed', {
+                  type: 'tappressed',
+                  touches: this.touches,
+                  touch
+                });
+              }
             }
-          }
-        };
-        this.services.ticker.add(update);
+          };
+          this.services.ticker.add(update);
+        } else {
+          touch.started = true;
+          this.emitter.emit('touchstart', {
+            type: 'touchstart',
+            touches: this.touches,
+            touch
+          });
+        }
       },
       pointermove: event => {
         const touch = findClosest(event.data.global, this.touches);
@@ -125,12 +133,15 @@ export class MultiTouch {
       },
       pointerup: event => {
         const touch = findClosest(event.data.global, this.touches);
+        let oldTouch;
         if (touch) {
           let changed = [];
           for (let i = 0; i < this.touches.length; i++) {
             if (this.touches[i].id !== touch.id) {
               changed.push(this.touches[i]);
-            } 
+            } else {
+              oldTouch = this.touches[i];
+            }
           }
           this.touches = changed;
 
@@ -142,14 +153,15 @@ export class MultiTouch {
             });
           } else {
             if (!touch.pressed) {
-              this.emitter.emit('tapPressed', {
-                type: 'tapPressed',
+              oldTouch.pressed = true;
+              this.emitter.emit('tappressed', {
+                type: 'tappressed',
                 touches: this.touches,
                 touch
               });
             }
-            this.emitter.emit('tapReleased', {
-              type: 'tapReleased',
+            this.emitter.emit('tapreleased', {
+              type: 'tapeleased',
               touches: this.touches,
               touch
             });

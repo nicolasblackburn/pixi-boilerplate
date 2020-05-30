@@ -22,7 +22,9 @@ export class Inputs {
       services: this.services,
       events: events,
       state: state,
-      axisDistance: 25
+      axisDistance: 25,
+      dualHands: false,
+      virtualDPad: true
     });
 
     this.keyboardInputs = new KeyboardInputs({
