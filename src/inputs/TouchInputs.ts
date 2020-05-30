@@ -8,7 +8,7 @@ import { discreteAngle } from "pixi-boilerplate/utils";
 const { min } = Math;
 
 const TAP_THRESHOLD_MS = 100;
-const DISTANCE_THRESHOLD_PX = 10;
+const DISTANCE_THRESHOLD_PX = 5;
 
 export class TouchInputs {
   protected config: {
