@@ -5,6 +5,7 @@ import { Physics } from "pixi-boilerplate/physics/Physics";
 import { SceneController } from "pixi-boilerplate/scenes/SceneController";
 
 export type ApplicationServices = {
+  components: Map<string, any>,
   inputs: Inputs,
   interaction: interaction.InteractionManager,
   layout: Layout,

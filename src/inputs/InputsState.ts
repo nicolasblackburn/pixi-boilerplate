@@ -1,5 +1,17 @@
 import { createPoint, Point } from "pixi-boilerplate/geom";
 
+export interface AxisState {
+  axis: Point;
+}
+
+export interface Button0State {
+  button0: {pressed: boolean};
+}
+
+export interface Button1State {
+  button1: {pressed: boolean};
+}
+
 export class InputsState {
   public axis: Point;
   public button0: {pressed: boolean};

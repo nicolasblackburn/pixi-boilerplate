@@ -316,6 +316,11 @@ export function randomUnitVector() {
   return (a => createPoint(Math.cos(a), Math.sin(a)))(Math.random() * 2 * Math.PI);
 }
 
+export function inRectangle(point: Point, rectangle: Rectangle) {
+  return rectangle.x <= point.x && point.x <= rectangle.x + rectangle.width && 
+    rectangle.y <= point.y && point.y <= rectangle.y + rectangle.height;
+}
+
 export function rectanglesIntersect(
   rect0: Rectangle,
   rect1: Rectangle

@@ -6,24 +6,17 @@ export class Body {
   public bounds: Rectangle;
   public entity: any;
   public mass: number;
-  public maxSpeed: number;
-  public onMapCollide: (...args: any[]) => void;
+  public maxVelocityMagnitude: number;
   public position: Point;
-  public transform: {
-    translate: Point,
-    scale: Point,
-    rotate: number
-  };
   public velocity: Point;
   
-  constructor(options: Partial<{acceleration: Point, anchor: Point, bounds: Rectangle, mass: number, maxSpeed: number, onMapCollide(...args: any[]): void, position: Point, velocity: Point}> & {entity: any}) {
+  constructor(options: Partial<{acceleration: Point, anchor: Point, bounds: Rectangle, mass: number, maxVelocityMagnitude: number, position: Point, velocity: Point}> & {entity: any}) {
     options = {
       acceleration: createPoint(0, 0),
       anchor: createPoint(0.5, 0.5),
       bounds: createRectangle(0, 0, 16, 16),
       mass: 1,
-      maxSpeed: 60,
-      onMapCollide: () => null,
+      maxVelocityMagnitude: 60,
       position: createPoint(0, 0),
       velocity: createPoint(0, 0),
       ...options
@@ -34,14 +27,8 @@ export class Body {
     this.bounds = options.bounds;
     this.entity = options.entity;
     this.mass = options.mass;
-    this.maxSpeed = options.maxSpeed;
-    this.onMapCollide = options.onMapCollide;
+    this.maxVelocityMagnitude = options.maxVelocityMagnitude;
     this.position = options.position;
-    this.transform = {
-      translate: createPoint(0, 0),
-      scale: createPoint(0, 0),
-      rotate: 0
-    }
     this.velocity = options.velocity;
   }
 }

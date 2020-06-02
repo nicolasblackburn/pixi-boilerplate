@@ -47,8 +47,8 @@ export class Physics {
       const lastPosition = pointCopy(body.position);
       this.updateBody(deltaTime, body, STATIC_FRICTION);
       this.processMapCollisions(lastPosition, body);
-      body.transform.translate.x = -this.map.position.x;
-      body.transform.translate.y = -this.map.position.y;
+      //body.transform.translate.x = -this.map.position.x;
+      //body.transform.translate.y = -this.map.position.y;
     }
   }
 
@@ -70,7 +70,7 @@ export class Physics {
         acceleration
           .multiply(deltaTime * body.mass)
     )
-    .clampRadius(body.maxSpeed)
+    .clampRadius(body.maxVelocityMagnitude)
     .assignTo(body.velocity);
 
     friction.normalize().multiply(-deltaTime * body.mass * frictionCoef);
@@ -136,8 +136,8 @@ export class Physics {
             }
           } else {
             body.position.x = previousPosition.x;
-            if (hasOnMapCollide(body)) {
-              body.onMapCollide(new MapCollision(createPoint(displacement.x < 0 ? 1 : -1, 0)));
+            if (hasOnMapCollide(body.entity)) {
+              body.entity.onMapCollide(new MapCollision(createPoint(displacement.x < 0 ? 1 : -1, 0)));
             }
           }
           break;

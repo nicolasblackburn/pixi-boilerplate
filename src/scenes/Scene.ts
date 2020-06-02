@@ -24,7 +24,11 @@ export class Scene {
   }
 
   public addListener(listener: any, priority?: number) {
-    this.listeners.splice(priority ? priority : 0, 0, listener);
+    if (priority !== undefined) {
+      this.listeners.splice(priority, 0, listener);
+    } else {
+      this.listeners.push(listener);
+    }
   }
 
   public fixedUpdate(deltaTime: number) {

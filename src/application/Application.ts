@@ -60,6 +60,7 @@ export class Application {
     this.listeners = [];
 
     this.services = {
+      components: null,
       inputs: null,
       interaction: null,
       layout: null,
@@ -96,6 +97,7 @@ export class Application {
   }
 
   protected initServices() {
+    this.initComponents();
     this.initInteraction();
     this.initInputs();
     this.initRenderer();
@@ -106,6 +108,10 @@ export class Application {
     this.initScenes();
     this.initStorage();
     this.initTicker();
+  }
+
+  protected initComponents() {
+    this.services.components = new Map();
   }
 
   protected initInputs() {

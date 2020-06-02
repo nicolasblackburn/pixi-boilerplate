@@ -146,3 +146,43 @@ export function getText(text: string) {
     return text;
   }
 }
+
+export function weightedRandom(weights: number[]): number;
+export function weightedRandom<T>(outcomes: {value: T, weight: number}[]): T;
+export function weightedRandom<T>(outcomes: (number | {value: T, weight: number})[]): T {
+  if (!outcomes.length) {
+    return;
+  } 
+
+  if (typeof outcomes[0] === 'number') {
+    let sum = 0;
+    for (const weight of outcomes as number[]) {
+      sum += weight;
+    }
+    const rnd = Math.random() * sum | 0;
+    let outcomeIndex = 0;
+    let outcomeWeight = outcomes[outcomeIndex] as number;
+    while (rnd >= outcomeWeight) {
+      outcomeIndex++;
+      outcomeWeight += outcomes[outcomeIndex] as number;
+    }
+    return outcomeIndex as any;
+  } else {
+    let sum = 0;
+    for (const entry of outcomes as {weight: number}[]) {
+      sum += entry.weight;
+    }
+    const rnd = Math.random() * sum | 0;
+    let outcomeIndex = 0;
+    let outcomeWeight = (outcomes[outcomeIndex] as {weight: number}).weight;
+    while (rnd >= outcomeWeight) {
+      outcomeIndex++;
+      outcomeWeight += (outcomes[outcomeIndex] as {weight: number}).weight;
+    }
+    return (outcomes[outcomeIndex] as {value: T}).value;
+  }
+}
+
+export function sign(n: number) {
+  return n < 0 ? -1 : n === 0 ? 0 : 1;
+}
