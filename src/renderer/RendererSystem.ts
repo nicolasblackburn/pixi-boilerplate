@@ -6,7 +6,6 @@ import { Renderer } from "pixi.js";
 import { System } from "pixi-boilerplate/system/System";
 
 interface RendererEntity {
-  active: boolean;
   body: Body;
   sprite: Sprite;
 }
@@ -22,10 +21,8 @@ export class RendererSystem extends System<RendererEntity> {
   public update(deltaTime: number) {
     const map = <TiledMap>this.services.components.get("map");
     for (const entity of this.entities) {
-      if (entity.active) {
-        entity.sprite.x = entity.body.position.x - map.position.x;
-        entity.sprite.y = entity.body.position.y - map.position.y;
-      }
+      entity.sprite.x = entity.body.position.x - map.position.x;
+      entity.sprite.y = entity.body.position.y - map.position.y;
     }
   }
 }
