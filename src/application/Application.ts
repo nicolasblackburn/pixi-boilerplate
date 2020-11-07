@@ -8,6 +8,7 @@ import { ApplicationServices } from "pixi-boilerplate/application/ApplicationSer
 import { Rectangle, createRectangle } from "pixi-boilerplate/geom";
 import { InputsState } from "pixi-boilerplate/inputs/InputsState";
 import { RendererSystem } from "pixi-boilerplate/renderer/RendererSystem";
+import { StateSystem } from "pixi-boilerplate/states/StateSystem";
 
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
@@ -70,6 +71,7 @@ export class Application {
       renderer: null,
       scenes: null,
       stage: null,
+      states: null,
       storage: null,
       ticker: null
     };
@@ -103,6 +105,7 @@ export class Application {
     this.initInputs();
     this.initRenderer();
     this.initStage();
+    this.initStates();
     this.initLayout();
     this.initLoader();
     this.initPhysics();
@@ -154,6 +157,11 @@ export class Application {
 
   protected initStage() {
     this.services.stage = this.application.stage;
+  }
+
+  protected initStates() {
+    this.services.states = new StateSystem({services: this.services});
+    this.addListener(this.services.states);
   }
 
   protected initStorage() {
