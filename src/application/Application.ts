@@ -7,6 +7,7 @@ import { Application as PIXI_Application } from "pixi.js";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Rectangle, createRectangle } from "pixi-boilerplate/geom";
 import { InputsState } from "pixi-boilerplate/inputs/InputsState";
+import { RendererSystem } from "pixi-boilerplate/renderer/RendererSystem";
 
 const STEPS_PER_SECOND = 10;
 const FPS = 60;
@@ -139,7 +140,8 @@ export class Application {
   }
 
   protected initRenderer() {
-    this.services.renderer = this.application.renderer;
+    this.services.renderer = new RendererSystem({services: this.services, renderer: this.application.renderer});
+    this.addListener(this.services.renderer);
   }
 
   protected initScenes() {
