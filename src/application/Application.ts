@@ -88,11 +88,11 @@ export class Application {
     .catch(error => this.error(error));
   }
 
-  public addListener(listener) {
+  public addListener(listener: any) {
     this.listeners.push(listener);
   }
 
-  public removeListener(listenerA) {
+  public removeListener(listenerA: any) {
     this.listeners = this.listeners.filter(listenerB => listenerA !== listenerB);
   }
 

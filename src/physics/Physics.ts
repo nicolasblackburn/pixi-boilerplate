@@ -6,6 +6,7 @@ import { MapCollision } from "./MapCollision";
 import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
 import { TiledMap } from "pixi-boilerplate/map/TiledMap";
+import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 
 const STATIC_FRICTION = 300;
 
@@ -14,6 +15,8 @@ function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapCollision): v
 }
 
 export class Physics {
+  public events: EventEmitter;
+
   protected bodies: Body[];
   protected map: TiledMap;
   protected services: ApplicationServices;
@@ -22,6 +25,7 @@ export class Physics {
     const {services} = options;
 
     this.bodies = [];
+    this.events = new EventEmitter();
     this.services = services;
   }
   
@@ -29,32 +33,21 @@ export class Physics {
     this.map = map;
   }
 
-  /**
-   * @param {Body} body 
-   * @param {number} priority 
-   */
   public addBody(body: Body, priority?: number) {
     if (!this.bodies.includes(body)) {
       this.bodies.splice(priority !== undefined ? priority : this.bodies.length - 1, 0, body);
     }
   }
 
-  /**
-   * @param {number} deltaTime 
-   */
   public fixedUpdate(deltaTime: number) {
     for (const body of this.bodies) {
       const lastPosition = pointCopy(body.position);
       this.updateBody(deltaTime, body, STATIC_FRICTION);
       this.processMapCollisions(lastPosition, body);
-      //body.transform.translate.x = -this.map.position.x;
-      //body.transform.translate.y = -this.map.position.y;
     }
+    this.events.emit("fixedupdate", deltaTime);
   }
 
-  /**
-   * @param {Body} body 
-   */
   public removeBody(body: Body) {
     this.bodies = this.bodies.filter(bodyB => bodyB !== body);
   }

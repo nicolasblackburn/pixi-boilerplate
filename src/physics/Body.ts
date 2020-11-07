@@ -2,7 +2,6 @@ import { createPoint, createRectangle, Point, Rectangle } from "pixi-boilerplate
 
 export class Body {
   public acceleration: Point;
-  public anchor: Point;
   public bounds: Rectangle;
   public entity: any;
   public mass: number;
@@ -13,7 +12,6 @@ export class Body {
   constructor(options: Partial<{acceleration: Point, anchor: Point, bounds: Rectangle, mass: number, maxVelocityMagnitude: number, position: Point, velocity: Point}> & {entity: any}) {
     options = {
       acceleration: createPoint(0, 0),
-      anchor: createPoint(0.5, 0.5),
       bounds: createRectangle(0, 0, 16, 16),
       mass: 1,
       maxVelocityMagnitude: 60,
@@ -23,7 +21,6 @@ export class Body {
     };
 
     this.acceleration = options.acceleration;
-    this.anchor = options.anchor;
     this.bounds = options.bounds;
     this.entity = options.entity;
     this.mass = options.mass;

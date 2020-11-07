@@ -8,7 +8,10 @@ export interface TiledMap {
   rooms: Room[];
   tilesCount: Point;
   tileSize: Point;
+  
+  spawn(): void;
   getSolidTilesInRectangle(rectangle: Rectangle, tiles?: Rectangle[]): Rectangle[];
-  getTileIdAt(x: number, y: number);
-  isSolid(tileId: number);
+  getTileIdAt(x: number, y: number): number;
+  isSolid(tileId: number): boolean;
+  getRoomAt(x: number, y: number): Room;
 }
