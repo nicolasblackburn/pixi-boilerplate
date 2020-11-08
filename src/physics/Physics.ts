@@ -5,7 +5,7 @@ import { ApplicationServices } from "pixi-boilerplate/application/ApplicationSer
 import { MapCollision } from "./MapCollision";
 import { POINT2D_POOL } from "pixi-boilerplate/geom/Point2D";
 import { RECTANGLE2D_POOL } from "pixi-boilerplate/geom/Rectangle2D";
-import { TiledMap } from "pixi-boilerplate/map/TiledMap";
+import { Map } from "pixi-boilerplate/map/Map";
 import { EventEmitter } from "pixi-boilerplate/events/EventEmitter";
 import { System } from "pixi-boilerplate/system/System";
 
@@ -22,7 +22,7 @@ function hasOnMapCollide(o: any): o is {onMapCollide(collision: MapCollision): v
 export class Physics extends System<PhysicsEntity> {
   public events: EventEmitter;
 
-  protected map: TiledMap;
+  protected map: Map;
   protected services: ApplicationServices;
 
   constructor(options: {services: ApplicationServices}) {
@@ -30,7 +30,7 @@ export class Physics extends System<PhysicsEntity> {
     this.events = new EventEmitter();
   }
   
-  public setMap(map: TiledMap) {
+  public setMap(map: Map) {
     this.map = map;
   }
 
@@ -91,28 +91,24 @@ export class Physics extends System<PhysicsEntity> {
         add(displacement, createPoint(previousBodyRect.width, previousBodyRect.height), previousBodyRect)
       ], clipRect);
 
-      const maxVisibleTilesCount = this.map.maxVisibleTilesCount.x * this.map.maxVisibleTilesCount.y;
-      const tileResources = new Array(maxVisibleTilesCount);
-      const tiles = new Array(maxVisibleTilesCount);
-      for (let i = 0; i < maxVisibleTilesCount; i++) {
+      const tiles = this.map.getCollidablesInRectangle(clipRect);
+      const tileResources = new Array(tiles.length);
+      for (let i = 0; i < tiles.length; i++) {
         tileResources[i] = RECTANGLE2D_POOL.get();
-        tiles[i] = tileResources[i];
       }
-
-      this.map.getSolidTilesInRectangle(clipRect, tiles);
 
       body.position.y -= displacement.y;
       getBodyBounds(body, bodyRect);
       
       for (const tile of tiles) {
-        if (rectanglesIntersect(bodyRect, tile)) {
-          if (this.collideCornerTop(bodyRect, tile)) {
+        if (rectanglesIntersect(bodyRect, tile.body.bounds)) {
+          if (this.collideCornerTop(bodyRect, tile.body.bounds)) {
             body.position.x = previousPosition.x;
             if (Math.abs(displacement.x) / Math.SQRT2 > Math.abs(displacement.y)) {
               body.position.y -= Math.abs(displacement.x) / Math.SQRT2;
               displacement.y = 0
             }
-          } else if (this.collideCornerBottom(bodyRect, tile)) {
+          } else if (this.collideCornerBottom(bodyRect, tile.body.bounds)) {
             body.position.x = previousPosition.x;
             if (Math.abs(displacement.x) / Math.SQRT2 > Math.abs(displacement.y)) {
               body.position.y += Math.abs(displacement.x) / Math.SQRT2;
@@ -132,14 +128,14 @@ export class Physics extends System<PhysicsEntity> {
       getBodyBounds(body, bodyRect);
       
       for (const tile of tiles) {
-        if (rectanglesIntersect(bodyRect, tile)) {
-          if (this.collideCornerLeft(bodyRect, tile)) {
+        if (rectanglesIntersect(bodyRect, tile.body.bounds)) {
+          if (this.collideCornerLeft(bodyRect, tile.body.bounds)) {
             body.position.y = previousPosition.y;
             if (Math.abs(displacement.y) / Math.SQRT2 > Math.abs(displacement.x)) {
               body.position.x -= Math.abs(displacement.y) / Math.SQRT2;
               displacement.x = 0
             }
-          } else if (this.collideCornerRight(bodyRect, tile)) {
+          } else if (this.collideCornerRight(bodyRect, tile.body.bounds)) {
             body.position.y = previousPosition.y;
             if (Math.abs(displacement.y) / Math.SQRT2 > Math.abs(displacement.x)) {
               body.position.x += Math.abs(displacement.y) / Math.SQRT2;
@@ -168,31 +164,21 @@ export class Physics extends System<PhysicsEntity> {
 
   protected collideCornerBottom(bodyRect: Rectangle, tile: Rectangle) {
     const offset = tile.height / 2 | 0;
-    const tileId = this.map.getTileIdAt(tile.x, tile.y + tile.height);
-    return !this.map.isSolid(tileId) && tile.y + offset - bodyRect.y < offset;
+    return this.map.canMove(tile.x, tile.y + tile.height) && tile.y + offset - bodyRect.y < offset;
   }
 
   protected collideCornerLeft(bodyRect: Rectangle, tile: Rectangle) {
     const offset = tile.width / 2 | 0;
-    const tileId = this.map.getTileIdAt(tile.x - tile.width, tile.y);
-    return !this.map.isSolid(tileId) && bodyRect.x + bodyRect.width - tile.x - offset < offset;
+    return this.map.canMove(tile.x - tile.width, tile.y) && bodyRect.x + bodyRect.width - tile.x - offset < offset;
   }
 
   protected collideCornerRight(bodyRect: Rectangle, tile: Rectangle) {
     const offset = tile.width / 2 | 0;
-    const tileId = this.map.getTileIdAt(tile.x + tile.width, tile.y);
-    return !this.map.isSolid(tileId) && tile.x + offset - bodyRect.x < offset;
+    return this.map.canMove(tile.x + tile.width, tile.y) && tile.x + offset - bodyRect.x < offset;
   }
 
   protected collideCornerTop(bodyRect: Rectangle, tile: Rectangle) {
     const offset = tile.height / 2 | 0;
-    const tileId = this.map.getTileIdAt(tile.x, tile.y - tile.height);
-    return !this.map.isSolid(tileId) && bodyRect.y + bodyRect.height - tile.y - offset < offset;
-  }
-
-  protected getTileCoordinates(tile: Rectangle, coordinates: Point) {
-    coordinates.x = tile.x / this.map.tileSize.x | 0;
-    coordinates.y = tile.y / this.map.tileSize.y | 0;
-    return coordinates;
+    return this.map.canMove(tile.x, tile.y - tile.height) && bodyRect.y + bodyRect.height - tile.y - offset < offset;
   }
 }

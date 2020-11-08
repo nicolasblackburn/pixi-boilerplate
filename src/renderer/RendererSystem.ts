@@ -1,6 +1,6 @@
 import { Body } from "pixi-boilerplate/physics/Body";
 import { Sprite } from "pixi-boilerplate/renderer/Sprite";
-import { TiledMap } from "pixi-boilerplate/map/TiledMap";
+import { Map } from "pixi-boilerplate/map/Map";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Renderer } from "pixi.js";
 import { System } from "pixi-boilerplate/system/System";
@@ -19,7 +19,7 @@ export class RendererSystem extends System<RendererEntity> {
   }
 
   public update(deltaTime: number) {
-    const map = <TiledMap>this.services.components.get("map");
+    const map = <Map>this.services.components.get("map");
     for (const entity of this.entities) {
       entity.sprite.x = entity.body.position.x - map.position.x;
       entity.sprite.y = entity.body.position.y - map.position.y;

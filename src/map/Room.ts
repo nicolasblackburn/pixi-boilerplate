@@ -1,13 +1,13 @@
 import { Rectangle, Point } from "pixi-boilerplate/geom";
-import { TiledMap } from "./TiledMap";
+import { Map } from "./Map";
 
 export class Room {
   public bounds: Rectangle;
   public spawnPoints: Point[];
   protected enemies: any[];
-  protected map: TiledMap;
+  protected map: Map;
 
-  constructor({bounds, map}: {bounds: Rectangle, map: TiledMap}) {
+  constructor({bounds, map}: {bounds: Rectangle, map: Map}) {
     this.bounds = bounds;
     this.enemies = [];
     this.map = map;
