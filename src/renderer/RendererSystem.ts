@@ -21,8 +21,8 @@ export class RendererSystem extends System<RendererEntity> {
   public update(deltaTime: number) {
     const map = <Map>this.services.components.get("map");
     for (const entity of this.entities) {
-      entity.sprite.x = entity.body.position.x - map.position.x;
-      entity.sprite.y = entity.body.position.y - map.position.y;
+      entity.sprite.x = entity.body.position.x - (map ? map.position.x : 0);
+      entity.sprite.y = entity.body.position.y - (map ? map.position.y : 0);
     }
   }
 }
