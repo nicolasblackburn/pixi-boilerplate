@@ -27,7 +27,7 @@ export class Layout {
   }
 
   public triggerResize() {
-    this.services.renderer.renderer.resize(this.viewport.width, this.viewport.height);
+    this.services.renderer.resize(this.viewport.width, this.viewport.height);
     resizeInto(this.viewport, this.gameBounds, this.services.stage);
     this.events.emit("resize", this.viewport);
   } 

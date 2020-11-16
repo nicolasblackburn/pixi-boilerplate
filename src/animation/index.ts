@@ -61,7 +61,7 @@ export function bezier(p1: {x: number, y: number}, p2: {x: number, y: number}, p
     };
 }
 
-export function applyFrame(frame: {[k: string]: any}, target: {[k: string]: any}) {
+export function applyFrame<T extends any>(frame: {[k: string]: any}, target: T): T {
   for (const [k, v] of Object.entries(frame)) {
     if (k === 'texture') {
       target[k] = textureFrom(v);
@@ -71,11 +71,12 @@ export function applyFrame(frame: {[k: string]: any}, target: {[k: string]: any}
       target[k] = v;
     }
   }
+  return target;
 }
 
 export function frameAnimation(target: {[k: string]: any}, options: any) {
-  const {frames, frameDuration, loop,  map, duration: _, ...optionsRest}: any = {
-    frameDuration: 1 / 80,
+  const {frames, speed, loop,  map, duration: _, ...optionsRest}: any = {
+    speed: 1,
     duration: 0,
     loop: false,
     map: x => x,
@@ -83,18 +84,19 @@ export function frameAnimation(target: {[k: string]: any}, options: any) {
   };
 
   let startTime;
+  const frameDuration = 1000 / 60 / speed;
 
   const animation = new Animation({
     onUpdate: (time, complete) => {
       if (startTime === undefined) {
         startTime = time;
       }
-      if (time - startTime >= frames.length / frameDuration && !loop) {
+      if (time - startTime >= frames.length * frameDuration && !loop) {
         applyFrame(map(frames[frames.length - 1]), target);
         complete && complete();
 
       } else {
-        const frame = (time * frameDuration | 0) % frames.length;
+        const frame = (time / frameDuration | 0) % frames.length;
         applyFrame(map(frames[frame]), target);
       }
     },

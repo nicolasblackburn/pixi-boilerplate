@@ -1,19 +1,18 @@
 import { Inputs } from "pixi-boilerplate/inputs/Inputs";
 import { Layout } from "pixi-boilerplate/layout/Layout";
-import { interaction, Loader, Container, Ticker } from "pixi.js";
+import { interaction, Loader, Container, Ticker, Renderer } from "pixi.js";
 import { Physics } from "pixi-boilerplate/physics/Physics";
 import { SceneController } from "pixi-boilerplate/scenes/SceneController";
-import { RendererSystem } from "pixi-boilerplate/renderer/RendererSystem";
 import { StateSystem } from "pixi-boilerplate/states/StateSystem";
 
-export type ApplicationServices = {
-  components: Map<string, any>,
+export type ApplicationServices<G extends {[k: string]: any} = {[k: string]: any}> = {
+  globals: G,
   inputs: Inputs,
   interaction: interaction.InteractionManager,
   layout: Layout,
   loader: Loader,
   physics: Physics,
-  renderer: RendererSystem,
+  renderer: Renderer,
   scenes: SceneController,
   stage: Container,
   states: StateSystem,

@@ -7,12 +7,24 @@ import { Application as PIXI_Application } from "pixi.js";
 import { ApplicationServices } from "pixi-boilerplate/application/ApplicationServices";
 import { Rectangle, createRectangle } from "pixi-boilerplate/geom";
 import { InputsState } from "pixi-boilerplate/inputs/InputsState";
-import { RendererSystem } from "pixi-boilerplate/renderer/RendererSystem";
 import { StateSystem } from "pixi-boilerplate/states/StateSystem";
+import { Scene } from "pixi-boilerplate/scenes/Scene";
 
-const STEPS_PER_SECOND = 10;
+const STEPS_PER_FRAME = 10;
 const FPS = 60;
 const MAX_SKIP_STEPS = 5;
+
+export interface ApplicationOptions {
+  assets: {
+    preload: {[name: string]: string},
+    load: {[name: string]: string},
+    postLoad: {[name: string]: string}
+  };
+  fixedUpdateStepDuration: number;
+  gameBounds: Rectangle;
+  scenes: {[name: string]: Scene | ((options: any) => Scene)};
+  [name: string]: any;
+}
  
 export class Application {
   public services: ApplicationServices;
@@ -20,21 +32,16 @@ export class Application {
   protected extraMS: number;
   protected framesElapsed: number;
   protected listeners: any[];
-  protected options: any & {
-    assets: any[],
-    fixedUpdateStepDuration: number,
-    gameBounds: Rectangle,
-    scenes: any[]
-  };
+  protected options: ApplicationOptions;
   protected stepDuration: number;
 
   /**
    * 
    * @param {ApplicationOptions} options 
    */
-  constructor(options: any) {
+  constructor(options: Partial<ApplicationOptions>) {
     options = {
-      fixedUpdateStepDuration: 1000 / FPS / STEPS_PER_SECOND,
+      fixedUpdateStepDuration: 1000 / FPS / STEPS_PER_FRAME,
       gameBounds: createRectangle(0, 0, window.innerWidth, window.innerHeight),
       ...options,
       assets: {
@@ -62,7 +69,7 @@ export class Application {
     this.listeners = [];
 
     this.services = {
-      components: null,
+      globals: null,
       inputs: null,
       interaction: null,
       layout: null,
@@ -100,7 +107,7 @@ export class Application {
   }
 
   protected initServices() {
-    this.initComponents();
+    this.initGlobals();
     this.initInteraction();
     this.initInputs();
     this.initRenderer();
@@ -114,8 +121,8 @@ export class Application {
     this.initTicker();
   }
 
-  protected initComponents() {
-    this.services.components = new Map();
+  protected initGlobals() {
+    this.services.globals = {};
   }
 
   protected initInputs() {
@@ -143,8 +150,7 @@ export class Application {
   }
 
   protected initRenderer() {
-    this.services.renderer = new RendererSystem({services: this.services, renderer: this.application.renderer});
-    this.addListener(this.services.renderer);
+    this.services.renderer = this.application.renderer;
   }
 
   protected initScenes() {
@@ -199,13 +205,13 @@ export class Application {
     const fixedDeltaTime = this.options.fixedUpdateStepDuration / 1000;
     let steps = 0;
     
-    while (this.extraMS > 0 && steps < MAX_SKIP_STEPS + STEPS_PER_SECOND) {
+    while (this.extraMS > 0 && steps < STEPS_PER_FRAME) {
       this.notify('fixedUpdate', fixedDeltaTime);
       this.extraMS -= this.options.fixedUpdateStepDuration;
       steps++;
     } 
 
-    if (steps >= MAX_SKIP_STEPS + STEPS_PER_SECOND) {
+    if (steps >= STEPS_PER_FRAME) {
       this.extraMS = 0;
     }
 

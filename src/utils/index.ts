@@ -3,16 +3,20 @@ import { Texture } from "pixi-boilerplate/renderer/Texture";
 import { Point } from "pixi-boilerplate/geom";
 import { Ticker } from "pixi-boilerplate/animation/Ticker";
 
+let qs;
 export function queryString() {
-  return window.location.search.slice(1).split("&").reduce((qs, kv) => {
-    const [k, v] = decodeURIComponent(kv).split("=");
-    if (v === undefined) {
-      qs[k] = k;
-    } else {
-      qs[k] = v;
-    }
-    return qs;
-  }, {});
+  if (!qs) {
+    qs = window.location.search.slice(1).split("&").reduce((qs, kv) => {
+      const [k, v] = decodeURIComponent(kv).split("=");
+      if (v === undefined) {
+        qs[k] = k;
+      } else {
+        qs[k] = v;
+      }
+      return qs;
+    }, {});
+  }
+  return qs;
 }
 
 /**

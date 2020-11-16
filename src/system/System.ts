@@ -1,6 +1,6 @@
-import { Component } from "pixi-boilerplate/component/Component";
+import { GameObject } from "pixi-boilerplate/game_object/GameObject";
 
-export class System<T> extends Component {
+export class System<T> extends GameObject {
   protected entities: T[] = [];
 
   public addEntity(entity: T, priority?: number) {

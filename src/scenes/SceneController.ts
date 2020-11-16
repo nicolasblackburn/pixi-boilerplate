@@ -23,14 +23,14 @@ export class SceneController {
   protected currentSceneName: string;
   protected skipInputChangesTimeout: number;
 
-  constructor({scenes, services}: {scenes: {[k: string]: Scene}, services: ApplicationServices}) {
+  constructor({scenes, services}: {scenes: {[k: string]: Scene | ((options: any) => Scene)}, services: ApplicationServices}) {
     this.activeScenes = [];
     this.services = services;
-    this.scenes = scenes;
+    this.scenes = {};
     this.loadedScenes = Object.keys(scenes).reduce((obj, key) => ({...obj, [key]: false}), {});
     this.currentSceneName = null;
     
-    this.initScenes();
+    this.initScenes(scenes);
   }
 
   public get current() {
@@ -131,10 +131,13 @@ export class SceneController {
     this.notify('update', deltaTime);
   }
 
-  protected initScenes() {
-    for (const [key, value] of Object.entries(this.scenes)) {
-      if (typeof (value as any) === "function") {
+  protected initScenes(scenes: {[k: string]: Scene | ((options: any) => Scene)}) {
+    for (const [key, value] of Object.entries(scenes)) {
+      if (typeof value === "function") {
         this.scenes[key] = (value as any)({services: this.services});
+        this.scenes[key].name = key;
+      } else {
+        this.scenes[key] = value;
         this.scenes[key].name = key;
       }
     } 
