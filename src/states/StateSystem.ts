@@ -14,10 +14,22 @@ export class StateSystem extends System<StateEntity> {
       notify([states.current], "fixedUpdate", deltaTime);
     }
   }
-
-  public inputChanged(state: Partial<InputsState>) {
+  
+  protected axisMove(state: InputsState) {
     for (const {states} of this.entities) {
-      notify([states.current], "inputChanged", state);
+      notify([states.current], "axisMove", state);
+    }
+  }
+  
+  protected buttonDown(state: InputsState) {
+    for (const {states} of this.entities) {
+      notify([states.current], "buttonDown", state);
+    }
+  }
+  
+  protected buttonUp(state: InputsState) {
+    for (const {states} of this.entities) {
+      notify([states.current], "buttonUp", state);
     }
   }
 

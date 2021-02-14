@@ -83,46 +83,46 @@ export class TouchInputs {
         this.state.axis.x = displacement.x;
         this.state.axis.y = displacement.y;
       }
-      this.events.emit('inputChanged', {axis: this.state.axis});
+      this.events.emit('axismove', {axis: this.state.axis});
     });
     
     this.touchRegion.on('touchend', () => {
       this.state.axis.x = 0;
       this.state.axis.y = 0;
-      this.events.emit('inputChanged', {axis: this.state.axis});
+      this.events.emit('axismove', {axis: this.state.axis});
     });
 
     this.touchRegion.on('touchendoutside', () => {
       this.state.axis.x = 0;
       this.state.axis.y = 0;
-      this.events.emit('inputChanged', {axis: this.state.axis});
+      this.events.emit('axismove', {axis: this.state.axis});
     });
 
     this.touchRegion.on('tappressed', () => {
       if (!this.config.dualHands) {
         this.state.button0.pressed = true;
-        this.events.emit('inputChanged', {button0: this.state.button0});
+        this.events.emit('buttondown', {button0: this.state.button0});
       }
     });
 
     this.touchRegion.on('tapreleased', () => {
       if (!this.config.dualHands) {
         this.state.button0.pressed = false;
-        this.events.emit('inputChanged', {button0: this.state.button0});
+        this.events.emit('buttonup', {button0: this.state.button0});
       }
     });
 
     this.secondaryTouchRegion.on('touchstart', () => {
       if (this.config.dualHands) {
         this.state.button0.pressed = true;
-        this.events.emit('inputChanged', {button0: this.state.button0});
+        this.events.emit('buttondown', {button0: this.state.button0});
       }
     });
 
     this.secondaryTouchRegion.on('touchend', () => {
       if (this.config.dualHands) {
         this.state.button0.pressed = false;
-        this.events.emit('inputChanged', {button0: this.state.button0});
+        this.events.emit('buttonup', {button0: this.state.button0});
       }
     });
   }

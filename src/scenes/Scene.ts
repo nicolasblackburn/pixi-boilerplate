@@ -34,9 +34,17 @@ export class Scene {
   public fixedUpdate(deltaTime: number) {
     this.notify('fixedUpdate', deltaTime);
   }
-
-  public inputChanged(inputs: InputsState) { 
-    this.notify('inputChanged', inputs);
+  
+  protected axisMove(state: InputsState) {
+    this.notify('axisMove', state);
+  }
+  
+  protected buttonDown(state: InputsState) {
+    this.notify('buttonDown', state);
+  }
+  
+  protected buttonUp(state: InputsState) {
+    this.notify('buttonUp', state);
   }
 
   public removeListener(listener: any) {

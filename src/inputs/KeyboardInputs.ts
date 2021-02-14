@@ -78,15 +78,23 @@ export class KeyboardInputs {
       }
 
       if (oldState.axis.x !== this.state.axis.x || oldState.axis.y !== this.state.axis.y) {
-        this.events.emit('inputChanged', {axis: this.state.axis});
+        this.events.emit('axismove', {axis: this.state.axis});
       }
       
       if (oldState.button0.pressed !== this.state.button0.pressed) {
-        this.events.emit('inputChanged', {button0: this.state.button0});
+        if (this.state.button0.pressed) {
+          this.events.emit('buttondown', {button0: this.state.button0});
+        } else {
+          this.events.emit('buttonup', {button0: this.state.button0});
+        }
       }
       
       if (oldState.button1.pressed !== this.state.button1.pressed) {
-        this.events.emit('inputChanged', {button1: this.state.button1});
+        if (this.state.button1.pressed) {
+          this.events.emit('buttondown', {button1: this.state.button1});
+        } else {
+          this.events.emit('buttonup', {button1: this.state.button1});
+        }
       }
     };
 

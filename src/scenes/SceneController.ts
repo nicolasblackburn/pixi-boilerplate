@@ -48,10 +48,22 @@ export class SceneController {
   public get(sceneName: string) {
     return this.scenes[sceneName];
   }
-
-  public inputChanged(state: InputsState) {
+  
+  protected axisMove(state: InputsState) {
     if (!this.skipInputChangesTimeout) {
-      this.notify('inputChanged', state);
+      this.notify('axisMove', state);
+    }
+  }
+  
+  protected buttonDown(state: InputsState) {
+    if (!this.skipInputChangesTimeout) {
+      this.notify('buttonDown', state);
+    }
+  }
+  
+  protected buttonUp(state: InputsState) {
+    if (!this.skipInputChangesTimeout) {
+      this.notify('buttonUp', state);
     }
   }
 

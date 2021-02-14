@@ -127,7 +127,9 @@ export class Application {
 
   protected initInputs() {
     this.services.inputs = new Inputs(this.services);
-    this.services.inputs.events.on('inputChanged', this.inputChanged, this);
+    this.services.inputs.events.on('axismove', this.axisMove, this);
+    this.services.inputs.events.on('buttondown', this.buttonDown, this);
+    this.services.inputs.events.on('buttonup', this.buttonUp, this);
   }
 
   protected initInteraction() {
@@ -195,8 +197,16 @@ export class Application {
     this.notify('fixedUpdate', deltaTime);
   }
   
-  protected inputChanged(state: InputsState) {
-    this.notify('inputChanged', state);
+  protected axisMove(state: InputsState) {
+    this.notify('axisMove', state);
+  }
+  
+  protected buttonDown(state: InputsState) {
+    this.notify('buttonDown', state);
+  }
+  
+  protected buttonUp(state: InputsState) {
+    this.notify('buttonUp', state);
   }
   
   protected update() {
